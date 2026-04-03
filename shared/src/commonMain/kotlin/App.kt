@@ -1,37 +1,46 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.ui.unit.dp
+import theme.DeutschCraftTheme
+import theme.Gray200
+import ui.EditorPanel
+import ui.SuggestionsPanel
 
-@OptIn(ExperimentalResourceApi::class)
 @Composable
 fun App() {
-    MaterialTheme {
-        var greetingText by remember { mutableStateOf("Hello, World!") }
-        var showImage by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-                greetingText = "Hello, ${getPlatformName()}"
-                showImage = !showImage
-            }) {
-                Text(greetingText)
-            }
-            AnimatedVisibility(showImage) {
-                Image(
-                    painterResource("compose-multiplatform.xml"),
-                    contentDescription = "Compose Multiplatform icon"
+    DeutschCraftTheme {
+        var editorText by remember { mutableStateOf("") }
+        var selectedText by remember { mutableStateOf("") }
+        
+        Scaffold { paddingValues ->
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+            ) {
+                // Editor Panel - Takes 2/3 of the space
+                EditorPanel(
+                    text = editorText,
+                    onTextChange = { editorText = it },
+                    onSelectionChange = { selectedText = it },
+                    modifier = Modifier.weight(2f)
+                )
+                
+                // Divider
+                Divider(
+                    modifier = Modifier.fillMaxHeight().width(1.dp),
+                    color = Gray200
+                )
+                
+                // Suggestions Panel - Takes 1/3 of the space
+                SuggestionsPanel(
+                    selectedText = selectedText,
+                    onApplySuggestion = { suggestion ->
+                        editorText = suggestion
+                    },
+                    modifier = Modifier.weight(1f)
                 )
             }
         }
