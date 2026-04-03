@@ -1,0 +1,26 @@
+CREATE TABLE strengthRecord (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    aspect TEXT NOT NULL,
+    description TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    confidence_score REAL NOT NULL DEFAULT 1.0
+);
+
+CREATE INDEX idx_strengthRecord_aspect ON strengthRecord(aspect);
+CREATE INDEX idx_strengthRecord_timestamp ON strengthRecord(timestamp);
+
+selectRecentStrengths:
+SELECT * FROM strengthRecord
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+selectTopStrengths:
+SELECT aspect, COUNT(*) AS `count`
+FROM strengthRecord
+GROUP BY aspect
+ORDER BY `count` DESC
+LIMIT :limit;
+
+insertStrength:
+INSERT INTO strengthRecord(aspect, description, timestamp, confidence_score)
+VALUES (:aspect, :description, :timestamp, :confidence_score);

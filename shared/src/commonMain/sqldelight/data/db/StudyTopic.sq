@@ -1,0 +1,34 @@
+CREATE TABLE studyTopic (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    category TEXT NOT NULL,
+    first_encountered INTEGER NOT NULL,
+    last_encountered INTEGER NOT NULL,
+    frequency INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_studyTopic_name ON studyTopic(name);
+CREATE INDEX idx_studyTopic_frequency ON studyTopic(frequency DESC);
+
+selectTopicByName:
+SELECT * FROM studyTopic WHERE name = :name;
+
+selectTopTopics:
+SELECT * FROM studyTopic
+ORDER BY frequency DESC, last_encountered DESC
+LIMIT :limit;
+
+selectTopicsByCategory:
+SELECT * FROM studyTopic
+WHERE category = :category
+ORDER BY frequency DESC;
+
+insertTopic:
+INSERT INTO studyTopic(name, category, first_encountered, last_encountered, frequency)
+VALUES (:name, :category, :first_encountered, :last_encountered, :frequency);
+
+updateTopicFrequency:
+UPDATE studyTopic
+SET last_encountered = :last_encountered,
+    frequency = :frequency
+WHERE id = :id;

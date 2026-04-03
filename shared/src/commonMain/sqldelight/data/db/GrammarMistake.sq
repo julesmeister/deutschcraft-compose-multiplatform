@@ -1,0 +1,59 @@
+CREATE TABLE grammarMistake (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    original_text TEXT NOT NULL,
+    correction TEXT NOT NULL,
+    error_type TEXT NOT NULL,
+    explanation TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    study_entry_id INTEGER NOT NULL,
+    recurrence_count INTEGER NOT NULL DEFAULT 1
+);
+
+CREATE INDEX idx_grammarMistake_type ON grammarMistake(error_type);
+CREATE INDEX idx_grammarMistake_timestamp ON grammarMistake(timestamp);
+CREATE INDEX idx_grammarMistake_recurrence ON grammarMistake(recurrence_count DESC);
+
+selectRecentMistakes:
+SELECT * FROM grammarMistake
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+selectMistakesByType:
+SELECT * FROM grammarMistake
+WHERE error_type = :error_type
+ORDER BY recurrence_count DESC, timestamp DESC
+LIMIT :limit;
+
+findSimilarMistake:
+SELECT * FROM grammarMistake
+WHERE original_text = :original_text
+  AND error_type = :error_type
+LIMIT 1;
+
+selectTopErrorTypes:
+SELECT error_type, COUNT(*) AS `count`
+FROM grammarMistake
+GROUP BY error_type
+ORDER BY `count` DESC
+LIMIT :limit;
+
+selectAllErrorTypesWithCount:
+SELECT error_type, COUNT(*) AS `count`
+FROM grammarMistake
+GROUP BY error_type
+ORDER BY `count` DESC;
+
+insertMistake:
+INSERT INTO grammarMistake(original_text, correction, error_type, explanation, timestamp, study_entry_id, recurrence_count)
+VALUES (:original_text, :correction, :error_type, :explanation, :timestamp, :study_entry_id, :recurrence_count);
+
+incrementRecurrence:
+UPDATE grammarMistake
+SET recurrence_count = :recurrence_count
+WHERE id = :id;
+
+countTotalMistakes:
+SELECT COUNT(*) FROM grammarMistake;
+
+countRecurringMistakes:
+SELECT COUNT(*) FROM grammarMistake WHERE recurrence_count > 1;

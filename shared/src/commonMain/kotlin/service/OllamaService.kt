@@ -9,12 +9,19 @@ import io.ktor.http.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.delay
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
+expect object OllamaProcessManager {
+    fun startOllamaServer(): Boolean
+    fun isOllamaRunning(): Boolean
+    fun shutdown()
+}
+
 class OllamaService {
-    private val baseUrl = "http://localhost:11434"
+    private val baseUrl = "http://127.0.0.1:11434"
     private val defaultModel = "llama3.2"
     
     private val client = HttpClient {
@@ -37,6 +44,26 @@ class OllamaService {
         } catch (e: Exception) {
             false
         }
+    }
+    
+    suspend fun ensureConnection(): Boolean {
+        // First, try to check if already running
+        if (checkConnection()) {
+            return true
+        }
+        
+        // Try to start the server
+        if (OllamaProcessManager.startOllamaServer()) {
+            // Wait for server to be ready (up to 10 seconds)
+            repeat(20) {
+                delay(500)
+                if (checkConnection()) {
+                    return true
+                }
+            }
+        }
+        
+        return false
     }
     
     suspend fun getAvailableModels(): List<String> {
@@ -100,7 +127,9 @@ Provide only the result without explanations or quotes:"""
         val requestBody = GenerateRequest(
             model = model,
             prompt = prompt,
-            stream = false
+            stream = false,
+            system = null,
+            options = null
         )
         
         try {
@@ -133,7 +162,9 @@ Keep your response concise (2-3 sentences max)."""
         val requestBody = GenerateRequest(
             model = defaultModel,
             prompt = prompt,
-            stream = false
+            stream = false,
+            system = null,
+            options = null
         )
         
         return try {
@@ -171,7 +202,9 @@ Provide exactly 3 suggestions, numbered 1., 2., 3. Keep each suggestion concise 
         val requestBody = GenerateRequest(
             model = model,
             prompt = prompt,
-            stream = false
+            stream = false,
+            system = null,
+            options = null
         )
         
         return try {
@@ -221,7 +254,9 @@ As the Assistant, provide a helpful response:"""
         val requestBody = GenerateRequest(
             model = model,
             prompt = prompt,
-            stream = false
+            stream = false,
+            system = null,
+            options = null
         )
         
         return try {
@@ -237,6 +272,46 @@ As the Assistant, provide a helpful response:"""
             }
         } catch (e: Exception) {
             "Error: ${e.message}"
+        }
+    }
+    
+    /**
+     * Generate a raw response from the AI with optional system prompt and temperature control.
+     * Used for structured JSON responses.
+     */
+    suspend fun generateRawResponse(
+        prompt: String,
+        model: String = defaultModel,
+        systemPrompt: String? = null,
+        temperature: Double? = null,
+        maxTokens: Int? = null
+    ): String {
+        val requestBody = GenerateRequest(
+            model = model,
+            prompt = prompt,
+            stream = false,
+            system = systemPrompt,
+            options = if (temperature != null || maxTokens != null) {
+                ModelOptions(
+                    temperature = temperature,
+                    num_predict = maxTokens
+                )
+            } else null
+        )
+        
+        return try {
+            val response = client.post("$baseUrl/api/generate") {
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }
+            if (response.status == HttpStatusCode.OK) {
+                val data = response.body<GenerateResponse>()
+                data.response?.trim() ?: ""
+            } else {
+                ""
+            }
+        } catch (e: Exception) {
+            ""
         }
     }
 }
@@ -255,7 +330,15 @@ data class ModelInfo(
 data class GenerateRequest(
     val model: String,
     val prompt: String,
-    val stream: Boolean
+    val stream: Boolean,
+    val system: String? = null,
+    val options: ModelOptions? = null
+)
+
+@Serializable
+data class ModelOptions(
+    val temperature: Double? = null,
+    val num_predict: Int? = null
 )
 
 @Serializable

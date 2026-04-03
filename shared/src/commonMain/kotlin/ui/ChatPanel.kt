@@ -3,6 +3,7 @@ package ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
@@ -12,6 +13,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.foundation.hoverable
+import androidx.compose.material.icons.filled.Send
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -25,6 +28,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import kotlinx.coroutines.launch
 import service.OllamaService
 import theme.*
@@ -233,16 +237,46 @@ fun ChatPanel(
                     }
                 )
                 
-                IconButton(
-                    onClick = { if (isGenerating) stopGeneration() else sendMessage() },
-                    enabled = if (isGenerating) true else inputText.isNotBlank(),
-                    modifier = Modifier.size(48.dp)
+                val sendButtonInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                val isSendButtonHovered by sendButtonInteractionSource.collectIsHoveredAsState()
+                
+                val buttonSize = if (isGenerating) 48.dp else 40.dp
+                val buttonBgColor = when {
+                    isGenerating -> Color(0xFFDC2626)
+                    isSendButtonHovered && inputText.isNotBlank() -> IndigoDark
+                    inputText.isNotBlank() -> Indigo
+                    else -> Gray300
+                }
+                val iconTint = when {
+                    isGenerating -> Color.White
+                    inputText.isNotBlank() -> Color.White
+                    else -> Gray500
+                }
+                val iconScale = if (isSendButtonHovered && !isGenerating) 1.1f else 1f
+                
+                Box(
+                    modifier = Modifier
+                        .size(buttonSize)
+                        .clip(CircleShape)
+                        .background(buttonBgColor)
+                        .hoverable(sendButtonInteractionSource)
+                        .then(
+                            if (isGenerating || inputText.isNotBlank()) {
+                                Modifier.clickable { if (isGenerating) stopGeneration() else sendMessage() }
+                            } else Modifier
+                        ),
+                    contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         imageVector = if (isGenerating) Icons.Default.Close else Icons.Default.Send,
                         contentDescription = if (isGenerating) "Stop" else "Send",
-                        tint = if (isGenerating) Color(0xFFD32F2F) else if (inputText.isNotBlank()) Indigo else Gray400,
-                        modifier = Modifier.size(24.dp)
+                        tint = iconTint,
+                        modifier = Modifier
+                            .size(if (isGenerating) 24.dp else 20.dp)
+                            .graphicsLayer {
+                                scaleX = iconScale
+                                scaleY = iconScale
+                            }
                     )
                 }
             }
@@ -284,7 +318,7 @@ private fun ChatBubble(
                     modifier = Modifier.size(22.dp)
                 )
             }
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(4.dp))
         }
         
         // Message bubble with hover effect and copy button
@@ -320,8 +354,8 @@ private fun ChatBubble(
                     },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .size(28.dp)
-                        .padding(4.dp)
+                        .offset(x = (-8).dp, y = 4.dp)
+                        .size(24.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ContentCopy,
@@ -335,7 +369,7 @@ private fun ChatBubble(
         
         // User avatar (right side) - circular, aligned to bottom
         if (isUser) {
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(4.dp))
             Box(
                 modifier = Modifier
                     .size(36.dp)

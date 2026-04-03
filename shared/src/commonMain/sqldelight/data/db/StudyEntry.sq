@@ -1,0 +1,43 @@
+import kotlinx.datetime.Instant;
+
+CREATE TABLE studyEntry (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    content TEXT NOT NULL,
+    type TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    topic TEXT,
+    corrected_content TEXT,
+    analysis_json TEXT
+);
+
+CREATE INDEX idx_studyEntry_timestamp ON studyEntry(timestamp);
+CREATE INDEX idx_studyEntry_topic ON studyEntry(topic);
+
+selectRecentEntries:
+SELECT * FROM studyEntry
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+selectEntriesByTopic:
+SELECT * FROM studyEntry
+WHERE topic = :topic
+ORDER BY timestamp DESC;
+
+insertStudyEntry:
+INSERT INTO studyEntry(content, type, timestamp, topic, corrected_content, analysis_json)
+VALUES (:content, :type, :timestamp, :topic, :corrected_content, :analysis_json);
+
+updateAnalysis:
+UPDATE studyEntry
+SET corrected_content = :corrected_content,
+    analysis_json = :analysis_json
+WHERE id = :id;
+
+countEntries:
+SELECT COUNT(*) FROM studyEntry;
+
+sumWordCount:
+SELECT COALESCE(SUM((LENGTH(content) + 1) / 2), 0) AS total_words FROM studyEntry;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

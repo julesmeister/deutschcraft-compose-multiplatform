@@ -3,8 +3,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -12,6 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import data.db.DatabaseDriverFactory
+import data.settings.ThemeMode
+import data.settings.FontSize
+import androidx.compose.foundation.isSystemInDarkTheme
 import theme.DeutschCraftTheme
 import theme.Gray200
 import theme.Gray50
@@ -19,15 +25,37 @@ import theme.Gray100
 import theme.Gray700
 import theme.Indigo
 import ui.EditorPanel
-import ui.ChatPanel
+import ui.ChatPanelWithPersistence
+import ui.GrammarAnalysisPanel
+import ui.SettingsPanel
 import ui.suggestions.SuggestionsPanel
+import kotlinx.coroutines.*
 
 @Composable
-fun App() {
-    DeutschCraftTheme {
+fun App(driverFactory: DatabaseDriverFactory) {
+    val scope = rememberCoroutineScope()
+    val settingsRepo = remember(driverFactory) { driverFactory.settingsRepository }
+    
+    var themeMode by remember { mutableStateOf(ThemeMode.SYSTEM) }
+    var fontSize by remember { mutableStateOf(FontSize.MEDIUM) }
+    
+    LaunchedEffect(Unit) {
+        settingsRepo.themeMode.collect { themeMode = it }
+    }
+    LaunchedEffect(Unit) {
+        settingsRepo.fontSize.collect { fontSize = it }
+    }
+    
+    val darkTheme = when (themeMode) {
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+    }
+    
+    DeutschCraftTheme(darkTheme = darkTheme) {
         var editorText by remember { mutableStateOf("") }
         var selectedText by remember { mutableStateOf("") }
-        var activeTab by remember { mutableStateOf(0) } // 0 = Editor, 1 = Chat
+        var activeTab by remember { mutableStateOf(0) } // 0 = Editor, 1 = Chat, 2 = Analysis, 3 = Settings
         
         Scaffold { paddingValues ->
             Row(
@@ -53,10 +81,22 @@ fun App() {
                             text = editorText,
                             onTextChange = { editorText = it },
                             onSelectionChange = { selectedText = it },
+                            onAnalyzeClick = { activeTab = 2 },
                             modifier = Modifier.fillMaxSize()
                         )
-                        1 -> ChatPanel(
+                        1 -> ChatPanelWithPersistence(
                             editorText = editorText,
+                            driverFactory = driverFactory,
+                            fontSize = fontSize,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        2 -> GrammarAnalysisPanel(
+                            text = editorText,
+                            driverFactory = driverFactory,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        3 -> SettingsPanel(
+                            driverFactory = driverFactory,
                             modifier = Modifier.fillMaxSize()
                         )
                     }
@@ -119,6 +159,24 @@ private fun ModeTabSelector(
                 label = "Chat",
                 isSelected = activeTab == 1,
                 onClick = { onTabSelected(1) },
+                modifier = Modifier.weight(1f)
+            )
+            
+            // Analysis Tab
+            TabButton(
+                icon = Icons.Default.Assessment,
+                label = "Analysis",
+                isSelected = activeTab == 2,
+                onClick = { onTabSelected(2) },
+                modifier = Modifier.weight(1f)
+            )
+            
+            // Settings Tab
+            TabButton(
+                icon = Icons.Default.Settings,
+                label = "Settings",
+                isSelected = activeTab == 3,
+                onClick = { onTabSelected(3) },
                 modifier = Modifier.weight(1f)
             )
         }
