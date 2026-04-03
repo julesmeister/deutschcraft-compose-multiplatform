@@ -36,6 +36,32 @@ import theme.DeutschCraftTheme
 private const val CompactWidthBreakpoint = 380
 private val ShimmerCurrencyColor = Color(0xFF334155)
 
+/**
+ * Section header — title is rendered as a hanging badge on the DCCard,
+ * so this composable only shows the action buttons row.
+ */
+@Composable
+fun M3SectionHeader(
+    title: String,
+    accentColor: Color,
+    modifier: Modifier = Modifier,
+    actions: @Composable (() -> Unit)? = null,
+) {
+    if (actions != null) {
+        Row(
+            modifier = modifier
+                .fillMaxWidth()
+                .padding(top = SectionHeaderTopSpacing, bottom = SectionHeaderTopSpacing),
+            horizontalArrangement = Arrangement.End,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            actions()
+        }
+    } else {
+        Spacer(modifier = Modifier.height(SectionHeaderTopSpacing))
+    }
+}
+
 @Composable
 fun M3TonalActionButton(
     icon: ImageVector,
