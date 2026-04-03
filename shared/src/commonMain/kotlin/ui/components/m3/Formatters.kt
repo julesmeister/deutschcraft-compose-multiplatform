@@ -3,9 +3,6 @@ package ui.components.m3
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.format
-import kotlinx.datetime.format.DateTimeComponents
-import kotlinx.datetime.format.char
 
 // Currency formatter (simple version for multiplatform)
 fun formatCurrency(amount: Number, currency: String = ""): String {

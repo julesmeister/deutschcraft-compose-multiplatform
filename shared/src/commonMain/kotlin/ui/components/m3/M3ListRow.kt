@@ -58,11 +58,6 @@ fun M3ListRow(
 }
 
 @Composable
-private fun Column(modifier: Modifier, content: @Composable () -> Unit) {
-    androidx.compose.foundation.layout.Column(modifier = modifier, content = content)
-}
-
-@Composable
 fun M3ListDivider(modifier: Modifier = Modifier) {
     Divider(
         modifier = modifier.padding(horizontal = LocalSpacing.current.md),

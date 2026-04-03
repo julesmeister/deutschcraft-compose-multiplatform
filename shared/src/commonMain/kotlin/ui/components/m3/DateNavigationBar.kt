@@ -15,9 +15,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
-import androidx.compose.material.icons.filled.ChevronLeft
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material.icons.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -39,7 +39,7 @@ fun DateNavigationBar(
     onPrevious: () -> Unit,
     onNext: () -> Unit,
     modifier: Modifier = Modifier,
-    icon: ImageVector = Icons.Default.CalendarMonth,
+    icon: ImageVector = Icons.Default.DateRange,
     onCenterClick: (() -> Unit)? = null,
 ) {
     val centerInteractionSource = remember { MutableInteractionSource() }
@@ -59,7 +59,7 @@ fun DateNavigationBar(
                     .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onPrevious() },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Default.ChevronLeft, null, tint = Color.White, modifier = Modifier.size(22.dp))
+                Icon(Icons.Default.KeyboardArrowLeft, null, tint = Color.White, modifier = Modifier.size(22.dp))
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -85,7 +85,7 @@ fun DateNavigationBar(
                     .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onNext() },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Default.ChevronRight, null, tint = Color.White, modifier = Modifier.size(22.dp))
+                Icon(Icons.Default.KeyboardArrowRight, null, tint = Color.White, modifier = Modifier.size(22.dp))
             }
         }
     }

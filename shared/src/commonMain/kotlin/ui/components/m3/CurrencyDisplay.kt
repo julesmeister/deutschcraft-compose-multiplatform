@@ -1,5 +1,6 @@
 package ui.components.m3
 
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -13,7 +14,7 @@ import theme.Gray800
 fun CurrencyDisplay(
     amount: Double,
     modifier: Modifier = Modifier,
-    style: TextStyle = DeutschCraftTheme.typography.displaySmall.copy(fontWeight = FontWeight.Bold),
+    style: TextStyle = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
     color: Color = Gray800,
     prefix: String = "\u20B1", // ₱
 ) {

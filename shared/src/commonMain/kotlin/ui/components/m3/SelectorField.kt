@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ChevronRight
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -68,11 +68,7 @@ fun DCSelectorField(
                     color = if (value.isNotBlank()) M3OnSurface else M3OnSurfaceVariant,
                     modifier = Modifier.weight(1f),
                 )
-                Icon(
-                    Icons.Default.ChevronRight, null,
-                    tint = M3OnSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
-                )
+                Icon(Icons.Default.ArrowForward, null, tint = M3OnSurfaceVariant, modifier = Modifier.size(20.dp))
             }
         }
     }

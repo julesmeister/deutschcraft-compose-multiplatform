@@ -47,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import theme.DeutschCraftTheme
 
 internal val FormFieldBg = Color(0xFFE8E9F2)
@@ -244,8 +245,7 @@ fun DCDropdownField(
             DropdownMenu(
                 expanded = expanded,
                 onDismissRequest = { expanded = false },
-                containerColor = Color.White,
-                shape = RoundedCornerShape(14.dp),
+                modifier = Modifier.background(Color.White).clip(RoundedCornerShape(14.dp)),
             ) {
                 options.forEach { option ->
                     DropdownMenuItem(

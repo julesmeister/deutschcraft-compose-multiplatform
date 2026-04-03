@@ -20,7 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Remove
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -96,7 +96,7 @@ fun DCQuantityStepper(
             enabled = value > minValue,
         ) {
             Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Default.Remove, null, modifier = Modifier.size(18.dp), tint = accentColor)
+                Icon(Icons.Default.Clear, null, modifier = Modifier.size(18.dp), tint = accentColor)
             }
         }
         if (valueDisplay != null) {

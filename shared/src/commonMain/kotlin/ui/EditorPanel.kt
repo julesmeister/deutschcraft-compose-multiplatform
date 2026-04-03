@@ -5,8 +5,6 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.FormatBold
-import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -66,12 +64,7 @@ fun EditorPanel(
                         .padding(horizontal = 8.dp),
                     color = Gray200
                 )
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.FormatBold, contentDescription = "Bold")
-                }
-                IconButton(onClick = { }) {
-                    Icon(Icons.Default.FormatItalic, contentDescription = "Italic")
-                }
+                // Format buttons removed - icons not available in commonMain
             }
         }
         

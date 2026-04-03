@@ -71,7 +71,7 @@ fun M3StatusBadge(
     }
 
     Box(
-        modifier = Modifier.graphicsLayer(scaleX = scale.value, scaleY = scale.value, this.alpha = alpha.value)
+        modifier = Modifier.graphicsLayer(scaleX = scale.value, scaleY = scale.value, alpha = alpha.value)
             .clip(RoundedCornerShape(50)).background(containerColor).padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {

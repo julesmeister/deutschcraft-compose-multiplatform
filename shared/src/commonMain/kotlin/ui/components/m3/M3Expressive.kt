@@ -15,7 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,7 +26,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -71,7 +70,7 @@ fun M3TonalActionButton(
     size: Dp = Dp.Unspecified,
     badge: @Composable (() -> Unit)? = null,
 ) {
-    val screenWidth = LocalConfiguration.current.screenWidthDp
+    val screenWidth = 400  // Default value for commonMain (LocalConfiguration is Android-only)
     val isCompact = screenWidth < CompactWidthBreakpoint
     val buttonSize = if (size != Dp.Unspecified) size else if (isCompact) 32.dp else 40.dp
     val iconSize = if (isCompact && size == Dp.Unspecified) 18.dp else 22.dp
@@ -121,7 +120,7 @@ fun M3TonalChip(
         Text(text = text, color = textColor, fontSize = DeutschCraftTheme.fontSize.base, fontWeight = FontWeight.SemiBold)
         if (trailingChevron) {
             Spacer(modifier = Modifier.width(4.dp))
-            Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+            Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
         }
     }
 }

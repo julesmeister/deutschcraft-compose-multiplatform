@@ -16,10 +16,12 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.layout.size
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.MaterialTheme
 import theme.DeutschCraftTheme
 
 /**
@@ -38,17 +40,16 @@ fun DCChipPickerSheet(
     onDismiss: () -> Unit,
     chipAvatar: @Composable (option: String, isSelected: Boolean) -> Unit = { option, isSelected ->
         if (isSelected) {
-            androidx.compose.material3.Icon(
-                imageVector = androidx.compose.material.icons.Icons.Default.Check,
-                contentDescription = null,
-                tint = Color.White,
-                modifier = Modifier.size(18.dp)
+            Text(
+                text = "✓",
+                color = Color.White,
+                fontSize = DeutschCraftTheme.fontSize.base,
+                fontWeight = FontWeight.Bold
             )
         } else {
             Text(
                 text = option.take(1).uppercase(),
-                fontSize = DeutschCraftTheme.fontSize.base,
-                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
                 color = accentColor
             )
         }

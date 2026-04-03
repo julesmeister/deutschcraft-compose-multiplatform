@@ -32,9 +32,7 @@ class OllamaService {
     
     suspend fun checkConnection(): Boolean {
         return try {
-            val response = client.get("$baseUrl/api/tags") {
-                timeout { requestTimeoutMillis = 3000 }
-            }
+            val response = client.get("$baseUrl/api/tags")
             response.status == HttpStatusCode.OK
         } catch (e: Exception) {
             false
