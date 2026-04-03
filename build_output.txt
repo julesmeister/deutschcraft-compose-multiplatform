@@ -1,0 +1,96 @@
+
+> Configure project :shared
+w: The following Kotlin/Native targets cannot be built on this machine and are disabled:
+iosArm64, iosSimulatorArm64, iosX64
+To hide this message, add 'kotlin.native.ignoreDisabledTargets=true' to the Gradle properties.
+
+
+w: The Default Kotlin Hierarchy Template was not applied to 'project ':shared'':
+Explicit .dependsOn() edges were configured for the following source sets:
+[iosArm64Main, iosMain, iosSimulatorArm64Main, iosX64Main]
+
+Consider removing dependsOn-calls or disabling the default template by adding
+    'kotlin.mpp.applyDefaultHierarchyTemplate=false'
+to your gradle.properties
+Please remove the dependsOn-calls or disable the default template.
+Learn more about hierarchy templates: https://kotl.in/hierarchy-template
+
+
+
+> Task :desktopApp:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :desktopApp:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :desktopApp:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :desktopApp:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :desktopApp:generateResourceAccessorsForCommonMain SKIPPED
+> Task :desktopApp:convertXmlValueResourcesForJvmMain NO-SOURCE
+> Task :desktopApp:copyNonXmlValueResourcesForJvmMain NO-SOURCE
+> Task :desktopApp:prepareComposeResourcesTaskForJvmMain NO-SOURCE
+> Task :desktopApp:generateResourceAccessorsForJvmMain SKIPPED
+> Task :desktopApp:generateActualResourceCollectorsForJvmMain SKIPPED
+> Task :desktopApp:generateComposeResClass SKIPPED
+> Task :desktopApp:generateExpectResourceCollectorsForCommonMain SKIPPED
+> Task :shared:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :shared:convertXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForCommonMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForCommonMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForCommonMain NO-SOURCE
+> Task :shared:convertXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :shared:copyNonXmlValueResourcesForDesktopMain NO-SOURCE
+> Task :shared:prepareComposeResourcesTaskForDesktopMain NO-SOURCE
+> Task :shared:generateResourceAccessorsForDesktopMain NO-SOURCE
+> Task :shared:generateActualResourceCollectorsForDesktopMain
+> Task :shared:generateComposeResClass
+> Task :shared:generateExpectResourceCollectorsForCommonMain
+> Task :shared:assembleDesktopMainResources
+> Task :shared:desktopProcessResources
+> Task :shared:processDesktopMainResources SKIPPED
+> Task :desktopApp:assembleJvmMainResources
+> Task :desktopApp:jvmProcessResources
+> Task :desktopApp:processJvmMainResources SKIPPED
+> Task :desktopApp:prepareAppResources NO-SOURCE
+
+> Task :shared:compileKotlinDesktop
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/App.kt:48:21 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/App.kt:66:17 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/App.kt:118:38 'val Icons.Filled.Message: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Message.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/ChatPanel.kt:90:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/ChatPanel.kt:147:53 'val Icons.Filled.Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/ChatPanel.kt:198:41 'val Icons.Filled.Send: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.Send.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/EditorPanel.kt:61:17 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/EditorPanel.kt:71:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/EditorPanel.kt:111:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/SuggestionsSettingsDialog.kt:70:17 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/DateNavigationBar.kt:62:36 'val Icons.Filled.KeyboardArrowLeft: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.KeyboardArrowLeft.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/DateNavigationBar.kt:88:36 'val Icons.Filled.KeyboardArrowRight: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.KeyboardArrowRight.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/M3Common.kt:61:31 'val Icons.Filled.ArrowBack: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowBack.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/M3Expressive.kt:123:46 'val Icons.Filled.KeyboardArrowRight: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.KeyboardArrowRight.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/M3ListRow.kt:62:5 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/MultiPageDialog.kt:146:56 'val Icons.Filled.ArrowForward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowForward.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/SelectorField.kt:71:36 'val Icons.Filled.ArrowForward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowForward.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/SheetComponents.kt:90:13 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/components/m3/SheetComponents.kt:126:28 'val Icons.Filled.ArrowForward: ImageVector' is deprecated. Use the AutoMirrored version at Icons.AutoMirrored.Filled.ArrowForward.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/suggestions/ContextualActions.kt:81:37 'val outlinedButtonBorder: BorderStroke' is deprecated. Please use the version that takes an `enabled` param to get the `BorderStroke` with the correct opacity.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/suggestions/SuggestionsContent.kt:140:33 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+w: file:///C:/Users/User/Documents/deutschcraft-compose/shared/src/commonMain/kotlin/ui/suggestions/SuggestionsPanel.kt:119:9 'fun Divider(modifier: Modifier = ..., thickness: Dp = ..., color: Color = ...): Unit' is deprecated. Renamed to HorizontalDivider.
+
+> Task :shared:compileDesktopMainJava NO-SOURCE
+> Task :shared:desktopMainClasses
+> Task :shared:desktopJar
+> Task :desktopApp:compileKotlinJvm
+> Task :desktopApp:compileJvmMainJava NO-SOURCE
+> Task :desktopApp:jvmMainClasses
+> Task :desktopApp:jvmJar
+
+> Task :desktopApp:run
+SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
+SLF4J: Defaulting to no-operation (NOP) logger implementation
+SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
+
+Deprecated Gradle features were used in this build, making it incompatible with Gradle 9.0.
+
+You can use '--warning-mode all' to show the individual deprecation warnings and determine if they come from your own scripts or plugins.
+
+For more on this, please refer to https://docs.gradle.org/8.7/userguide/command_line_interface.html#sec:command_line_warnings in the Gradle documentation.
+
+BUILD SUCCESSFUL in 56s
+12 actionable tasks: 12 executed

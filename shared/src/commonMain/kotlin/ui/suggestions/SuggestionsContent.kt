@@ -29,7 +29,6 @@ internal fun SuggestionsContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .weight(1f)
             .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)

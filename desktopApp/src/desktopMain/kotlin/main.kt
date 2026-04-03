@@ -1,4 +1,5 @@
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.window.Placement
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPlacement
@@ -10,7 +11,8 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "DeutschCraft Desktop",
         state = WindowState(
-            placement = WindowPlacement.Fullscreen
+            placement = WindowPlacement.Maximized,
+            size = DpSize(1400.dp, 900.dp)
         )
     ) {
         MainView()

@@ -30,6 +30,8 @@ kotlin {
                 implementation(compose.material3)
                 implementation(compose.ui)
                 @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+                implementation(compose.materialIconsExtended)
+                @OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
                 implementation(compose.components.resources)
                 
                 // Ktor for HTTP client

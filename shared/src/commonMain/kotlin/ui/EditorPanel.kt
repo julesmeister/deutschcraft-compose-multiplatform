@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import theme.*
@@ -22,12 +23,29 @@ fun EditorPanel(
     onSelectionChange: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var textFieldValue by remember { mutableStateOf(TextFieldValue(text)) }
     var wordCount by remember { mutableIntStateOf(0) }
     var charCount by remember { mutableIntStateOf(0) }
     
+    // Update local state when external text changes
     LaunchedEffect(text) {
-        wordCount = text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.size
-        charCount = text.length
+        if (text != textFieldValue.text) {
+            textFieldValue = TextFieldValue(text)
+        }
+    }
+    
+    LaunchedEffect(textFieldValue.text) {
+        wordCount = textFieldValue.text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.size
+        charCount = textFieldValue.text.length
+    }
+    
+    // Report selection changes
+    LaunchedEffect(textFieldValue.selection) {
+        val selection = textFieldValue.selection
+        if (selection.start != selection.end) {
+            val selectedText = textFieldValue.text.substring(selection.start, selection.end)
+            onSelectionChange(selectedText)
+        }
     }
     
     Column(
@@ -78,10 +96,10 @@ fun EditorPanel(
                 .padding(16.dp)
         ) {
             BasicTextField(
-                value = text,
+                value = textFieldValue,
                 onValueChange = { 
-                    onTextChange(it)
-                    // Simple selection tracking - in a real app, you'd use TextFieldValue with selection
+                    textFieldValue = it
+                    onTextChange(it.text)
                 },
                 modifier = Modifier.fillMaxSize(),
                 textStyle = TextStyle(
@@ -92,7 +110,7 @@ fun EditorPanel(
                 ),
                 decorationBox = { innerTextField ->
                     Box {
-                        if (text.isEmpty()) {
+                        if (textFieldValue.text.isEmpty()) {
                             Text(
                                 text = "Start writing here...\n\nSelect any text to get AI suggestions",
                                 style = TextStyle(

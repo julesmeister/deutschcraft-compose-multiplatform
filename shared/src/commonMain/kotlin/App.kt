@@ -3,8 +3,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -115,7 +115,7 @@ private fun ModeTabSelector(
             
             // Chat Tab
             TabButton(
-                icon = Icons.Default.ChatBubble,
+                icon = Icons.Default.Chat,
                 label = "Chat",
                 isSelected = activeTab == 1,
                 onClick = { onTabSelected(1) },

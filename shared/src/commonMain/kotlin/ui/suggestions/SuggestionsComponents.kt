@@ -51,7 +51,6 @@ internal fun EmptyState() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .weight(1f)
             .padding(24.dp),
         contentAlignment = Alignment.Center
     ) {
