@@ -1,11 +1,52 @@
-[![Obsolete project](https://jb.gg/badges/obsolete-plastic.svg)](https://github.com/JetBrains#jetbrains-on-github)
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-# [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform) application
+# DeutschCraft
 
-This template has been archived.
+A Compose Multiplatform desktop application for AI-powered German text editing and enhancement.
 
-* To create Compose Multiplatform projects, use the [Kotlin Multiplatform wizard](https://kmp.jetbrains.com/).
-  Make sure to enable the **Share UI** option.
-* To learn how to build Compose Multiplatform projects, see the [Get started with Compose Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/compose-multiplatform-getting-started.html) tutorial.
+## Features
 
-  If you have an idea on how to improve the tutorial, create a pull request to the [documentation repository](https://github.com/JetBrains/kotlin-multiplatform-dev-docs).
+- **AI Suggestions**: Get intelligent text improvement suggestions using Ollama LLMs
+- **Rich Text Editor**: Built-in editor with text selection and analysis
+- **Smart Formatting**: Multiple suggestion types (improve, grammar, rephrase, expand)
+- **Model Selection**: Choose from available Ollama models
+
+## Project Structure
+
+- **shared/**: Common Kotlin Multiplatform code shared across all targets
+  - `commonMain/`: Shared Compose UI components and business logic
+  - `ui/`: UI screens (SuggestionsPanel, EditorPanel)
+  - `service/`: Network services (Ollama API client)
+  - `ui/components/m3/`: Material Design 3 component library
+- **desktopApp/**: JVM desktop application target
+
+## Requirements
+
+- JDK 17 or higher
+- Gradle 8.x
+- Ollama running locally (for AI features)
+
+## Running the Desktop App
+
+```bash
+./gradlew :desktopApp:run
+```
+
+## Ollama Setup
+
+Ensure Ollama is installed and running locally on port 11434. The app uses models like `llama3.2` by default.
+
+```bash
+ollama serve
+ollama pull llama3.2
+```
+
+## Technology Stack
+
+- **UI Framework**: Jetpack Compose Multiplatform
+- **Networking**: Ktor Client
+- **Serialization**: Kotlinx Serialization JSON
+- **Date/Time**: Kotlinx Datetime
+- **LLM Integration**: Ollama API
+
+## License
+
+Apache 2.0
