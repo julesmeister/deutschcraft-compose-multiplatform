@@ -151,6 +151,94 @@ Keep your response concise (2-3 sentences max)."""
             "Error analyzing text: ${e.message}"
         }
     }
+    
+    suspend fun suggestContinuation(
+        fullText: String,
+        selectedText: String,
+        model: String = defaultModel
+    ): List<String> {
+        val prompt = """Based on the following context and the selected sentence, suggest 3 different ways to continue or expand on the text. 
+Each suggestion should be a complete sentence or short paragraph that flows naturally from the selected text.
+
+Full context:
+""" + fullText.take(800) + """
+
+Selected text:
+"$selectedText"
+
+Provide exactly 3 suggestions, numbered 1., 2., 3. Keep each suggestion concise (max 2 sentences)."""
+        
+        val requestBody = GenerateRequest(
+            model = model,
+            prompt = prompt,
+            stream = false
+        )
+        
+        return try {
+            val response = client.post("$baseUrl/api/generate") {
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }
+            if (response.status == HttpStatusCode.OK) {
+                val data = response.body<GenerateResponse>()
+                val rawResponse = data.response ?: ""
+                
+                // Parse the numbered list from the response
+                rawResponse.lines()
+                    .filter { it.trim().matches(Regex("^\\d+[.\\)]\\s+.+")) }
+                    .map { it.replace(Regex("^\\d+[.\\)]\\s*"), "").trim() }
+                    .filter { it.isNotEmpty() }
+                    .takeIf { it.isNotEmpty() }
+                    ?: rawResponse.split("\n\n")
+                        .filter { it.isNotBlank() }
+                        .map { it.trim() }
+                        .take(3)
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+    
+    suspend fun chat(
+        messages: List<ui.ChatMessage>,
+        systemContext: String,
+        model: String = defaultModel
+    ): String {
+        val conversationHistory = messages.joinToString("\n") { msg ->
+            val role = if (msg.isUser) "User" else "Assistant"
+            "$role: ${msg.text}"
+        }
+        
+        val prompt = """$systemContext
+
+Conversation history:
+$conversationHistory
+
+As the Assistant, provide a helpful response:"""
+        
+        val requestBody = GenerateRequest(
+            model = model,
+            prompt = prompt,
+            stream = false
+        )
+        
+        return try {
+            val response = client.post("$baseUrl/api/generate") {
+                contentType(ContentType.Application.Json)
+                setBody(requestBody)
+            }
+            if (response.status == HttpStatusCode.OK) {
+                val data = response.body<GenerateResponse>()
+                data.response?.trim() ?: "No response from AI"
+            } else {
+                "Error: Unable to get response"
+            }
+        } catch (e: Exception) {
+            "Error: ${e.message}"
+        }
+    }
 }
 
 @Serializable

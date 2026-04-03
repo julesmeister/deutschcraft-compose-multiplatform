@@ -10,6 +10,7 @@ pluginManagement {
         mavenCentral()
         google()
         maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+        maven("https://packages.jetbrains.team/maven/p/firework/dev")
     }
 
     plugins {
@@ -27,6 +28,7 @@ pluginManagement {
 
         id("org.jetbrains.compose").version(composeVersion)
         id("org.jetbrains.compose.hot-reload").version(composeHotReloadVersion)
+        id("org.jetbrains.kotlin.plugin.compose").version(kotlinVersion)
     }
 }
 
