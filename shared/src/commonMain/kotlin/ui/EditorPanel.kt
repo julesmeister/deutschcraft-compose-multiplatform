@@ -3,8 +3,8 @@ package ui
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Undo
-import androidx.compose.material.icons.automirrored.filled.Redo
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.FormatBold
 import androidx.compose.material.icons.filled.FormatItalic
 import androidx.compose.material3.*
@@ -55,10 +55,10 @@ fun EditorPanel(
                 )
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { }) {
-                    Icon(Icons.AutoMirrored.Filled.Undo, contentDescription = "Undo")
+                    Icon(Icons.Filled.Close, contentDescription = "Undo")
                 }
                 IconButton(onClick = { }) {
-                    Icon(Icons.AutoMirrored.Filled.Redo, contentDescription = "Redo")
+                    Icon(Icons.Filled.Refresh, contentDescription = "Redo")
                 }
                 Divider(
                     modifier = Modifier

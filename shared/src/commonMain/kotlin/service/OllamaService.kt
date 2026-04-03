@@ -24,7 +24,7 @@ class OllamaService {
                 isLenient = true
             })
         }
-        timeout {
+        install(HttpTimeout) {
             requestTimeoutMillis = 60000
             connectTimeoutMillis = 5000
         }
