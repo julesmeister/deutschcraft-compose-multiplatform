@@ -4,12 +4,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -22,6 +17,7 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
 import service.OllamaService
 import theme.*
+import ui.components.m3.*
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -38,6 +34,7 @@ fun SuggestionsPanel(
     var isGenerating by remember { mutableStateOf(false) }
     var availableModels by remember { mutableStateOf(listOf("llama3.2")) }
     var selectedModel by remember { mutableStateOf("llama3.2") }
+    var showSettings by remember { mutableStateOf(false) }
     
     LaunchedEffect(Unit) {
         val models = ollamaService.getAvailableModels()
@@ -62,20 +59,12 @@ fun SuggestionsPanel(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Surface(
-                    shape = MaterialTheme.shapes.small,
-                    color = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.15f),
+                M3IconBox(
+                    icon = Icons.Default.Star,
+                    tint = Indigo,
+                    bg = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f),
                     modifier = Modifier.size(36.dp)
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = androidx.compose.ui.graphics.Color.White,
-                            modifier = Modifier.size(18.dp)
-                        )
-                    }
-                }
+                )
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = "AI Suggestions",
@@ -83,39 +72,29 @@ fun SuggestionsPanel(
                     color = androidx.compose.ui.graphics.Color.White,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                 )
+                Spacer(modifier = Modifier.weight(1f))
+                IconButton(
+                    onClick = { showSettings = true },
+                    modifier = Modifier.size(36.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings",
+                        tint = androidx.compose.ui.graphics.Color.White,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
         
-        // Model Selector
-        Column(modifier = Modifier.padding(12.dp)) {
-            var expanded by remember { mutableStateOf(false) }
-            ExposedDropdownMenuBox(
-                expanded = expanded,
-                onExpandedChange = { expanded = it }
-            ) {
-                OutlinedTextField(
-                    value = selectedModel,
-                    onValueChange = {},
-                    readOnly = true,
-                    label = { Text("Model") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                    modifier = Modifier.menuAnchor().fillMaxWidth()
-                )
-                ExposedDropdownMenu(
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-                ) {
-                    availableModels.forEach { model ->
-                        DropdownMenuItem(
-                            text = { Text(model) },
-                            onClick = {
-                                selectedModel = model
-                                expanded = false
-                            }
-                        )
-                    }
-                }
-            }
+        // Settings Dialog
+        if (showSettings) {
+            SuggestionsSettingsDialog(
+                availableModels = availableModels,
+                selectedModel = selectedModel,
+                onModelSelected = { selectedModel = it },
+                onDismiss = { showSettings = false }
+            )
         }
         
         // Suggestion Type Selector
@@ -238,41 +217,10 @@ fun SuggestionsPanel(
 }
 @Composable
 private fun EmptyState() {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = Gray100,
-            modifier = Modifier.size(64.dp)
-        ) {
-            Box(contentAlignment = Alignment.Center) {
-                Icon(
-                    imageVector = Icons.Default.Star,
-                    contentDescription = null,
-                    tint = Gray400,
-                    modifier = Modifier.size(32.dp)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Select text to get AI suggestions",
-            style = MaterialTheme.typography.titleMedium,
-            color = Gray800,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Works best with 1-3 sentences",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Gray500
-        )
-    }
+    NoDataPlaceholder(
+        message = "Select text to get AI suggestions. Works best with 1-3 sentences.",
+        modifier = Modifier.padding(24.dp)
+    )
 }
 
 @Composable
@@ -287,22 +235,18 @@ private fun SuggestionsContent(
             .padding(16.dp)
             .verticalScroll(rememberScrollState())
     ) {
-        Text(
-            text = "Selected text",
-            style = MaterialTheme.typography.labelSmall,
-            color = Gray500
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = Gray100,
+        // Selected text card
+        DCCard(
+            horizontalMargin = 16.dp,
+            label = "SELECTED",
+            labelColor = Gray500,
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 text = if (selectedText.length > 150) selectedText.take(150) + "..." else selectedText,
                 style = MaterialTheme.typography.bodySmall,
                 color = Gray600,
-                modifier = Modifier.padding(12.dp),
+                modifier = Modifier.padding(16.dp),
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis
             )
@@ -310,29 +254,24 @@ private fun SuggestionsContent(
         
         Spacer(modifier = Modifier.height(16.dp))
         
-        Text(
-            text = "AI Suggestion",
-            style = MaterialTheme.typography.labelSmall,
-            color = Gray500
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Surface(
-            shape = MaterialTheme.shapes.medium,
-            color = Indigo.copy(alpha = 0.08f),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Indigo.copy(alpha = 0.2f)),
+        // AI Suggestion card
+        DCCard(
+            horizontalMargin = 16.dp,
+            label = "AI SUGGESTION",
+            labelColor = Indigo,
             modifier = Modifier.fillMaxWidth()
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(12.dp)
+                    .padding(16.dp)
             ) {
                 if (isGenerating && currentSuggestion.isEmpty()) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        strokeWidth = 2.dp,
-                        color = Indigo
-                    )
+                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        ShimmerEffect(height = 16.dp, widthFraction = 0.9f)
+                        ShimmerEffect(height = 16.dp, widthFraction = 0.7f)
+                        ShimmerEffect(height = 16.dp, widthFraction = 0.8f)
+                    }
                 } else {
                     Text(
                         text = currentSuggestion.ifEmpty { "Click Generate to get AI-powered suggestions" },

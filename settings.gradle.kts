@@ -16,6 +16,7 @@ pluginManagement {
         val kotlinVersion = extra["kotlin.version"] as String
         val agpVersion = extra["agp.version"] as String
         val composeVersion = extra["compose.version"] as String
+        val composeHotReloadVersion = extra["composeHotReload.version"] as String
 
         kotlin("jvm").version(kotlinVersion)
         kotlin("multiplatform").version(kotlinVersion)
@@ -25,11 +26,12 @@ pluginManagement {
         id("com.android.library").version(agpVersion)
 
         id("org.jetbrains.compose").version(composeVersion)
+        id("org.jetbrains.compose.hot-reload").version(composeHotReloadVersion)
     }
 }
 
 plugins {
-    id("org.gradle.toolchains.foojay-resolver-convention") version("0.4.0")
+    id("org.gradle.toolchains.foojay-resolver-convention") version("1.0.0")
 }
 
 dependencyResolutionManagement {
