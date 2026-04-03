@@ -2,9 +2,13 @@ package data.db
 
 import app.cash.sqldelight.db.SqlDriver
 import data.model.*
+import data.settings.SettingsRepository
+import data.repository.ChatRepository
 import kotlinx.datetime.Instant
 
 expect class DatabaseDriverFactory {
+    val chatRepository: ChatRepository
+    val settingsRepository: SettingsRepository
     fun createDriver(): SqlDriver
 }
 

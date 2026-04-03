@@ -9,7 +9,7 @@ import kotlinx.datetime.Instant
 /**
  * Repository for chat persistence using Room on Android.
  */
-class ChatRepository(private val database: AppDatabase) {
+class ChatRepository(private val database: AppDatabase) : data.repository.ChatRepository {
     private val sessionDao = database.chatSessionDao()
     private val messageDao = database.chatMessageDao()
 
@@ -108,20 +108,7 @@ class ChatRepository(private val database: AppDatabase) {
 
 // ==================== Domain Models ====================
 
-data class ChatSession(
-    val id: Long,
-    val title: String?,
-    val createdAt: Instant,
-    val updatedAt: Instant
-)
-
-data class ChatMessage(
-    val id: Long,
-    val sessionId: Long,
-    val content: String,
-    val isUser: Boolean,
-    val timestamp: Instant
-)
+// ChatSession and ChatMessage are defined in commonMain
 
 // ==================== Mappers ====================
 

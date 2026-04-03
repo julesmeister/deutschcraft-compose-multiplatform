@@ -7,8 +7,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.AutoMode
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Error
+import androidx.compose.material.icons.filled.SmartToy
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -22,6 +28,8 @@ import data.repository.ChatMessage
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import service.OllamaService
+import theme.Gray500
+import theme.Indigo
 import data.settings.FontSize
 
 @Composable
@@ -195,7 +203,10 @@ fun ChatPanelWithPersistence(
             )
 
             // Connection status banner
-            ConnectionStatusBanner(connectionStatus)
+            ConnectionStatusBanner(
+                connectionStatus = connectionStatus,
+                isGenerating = isGenerating
+            )
 
             // Chat messages
             Box(
@@ -253,33 +264,53 @@ fun ChatPanelWithPersistence(
 }
 
 @Composable
-private fun ConnectionStatusBanner(status: String) {
+private fun ConnectionStatusBanner(
+    connectionStatus: String,
+    isGenerating: Boolean = false,
+    lastResponse: String? = null
+) {
     val colors = MaterialTheme.colorScheme
     
+    // Determine what to show
     val (containerColor, contentColor, icon, message) = when {
-        status == "Connected" -> Quadruple(
+        // AI actively generating response
+        isGenerating -> Quadruple(
+            colors.tertiaryContainer,
+            colors.onTertiaryContainer,
+            Icons.Default.AutoMode,
+            "AI is typing..."
+        )
+        // Connection states
+        connectionStatus == "Connected" -> Quadruple(
             colors.primaryContainer,
             colors.onPrimaryContainer,
             Icons.Default.CheckCircle,
             "AI Ready"
         )
-        status == "Checking..." -> Quadruple(
+        connectionStatus == "Checking..." -> Quadruple(
             colors.secondaryContainer,
             colors.onSecondaryContainer,
             Icons.Default.Sync,
             "Checking AI connection..."
         )
-        status.contains("Error") || status.contains("Unable") -> Quadruple(
+        connectionStatus.contains("Error") || connectionStatus.contains("Unable") -> Quadruple(
             colors.errorContainer,
             colors.onErrorContainer,
             Icons.Default.Error,
-            status
+            connectionStatus
+        )
+        // AI just responded (fleeting state)
+        lastResponse != null -> Quadruple(
+            colors.primaryContainer,
+            colors.onPrimaryContainer,
+            Icons.Default.Done,
+            "AI responded"
         )
         else -> Quadruple(
             colors.surfaceVariant,
             colors.onSurfaceVariant,
             Icons.Default.SmartToy,
-            status
+            connectionStatus
         )
     }
     

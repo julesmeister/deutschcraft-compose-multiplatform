@@ -6,6 +6,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Assessment
 import androidx.compose.material.icons.filled.Chat
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.MenuOpen
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -56,6 +58,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
         var editorText by remember { mutableStateOf("") }
         var selectedText by remember { mutableStateOf("") }
         var activeTab by remember { mutableStateOf(0) } // 0 = Editor, 1 = Chat, 2 = Analysis, 3 = Settings
+        var showRightPanel by remember { mutableStateOf(true) }
         
         Scaffold { paddingValues ->
             Row(
@@ -63,14 +66,16 @@ fun App(driverFactory: DatabaseDriverFactory) {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                // Left Panel (Editor/Chat) - Takes 2/3 of the space
+                // Left Panel (Editor/Chat) - Takes available space
                 Column(
-                    modifier = Modifier.weight(2f)
+                    modifier = if (showRightPanel) Modifier.weight(2f) else Modifier.fillMaxSize()
                 ) {
-                    // Tab Selector
+                    // Tab Selector with right panel toggle
                     ModeTabSelector(
                         activeTab = activeTab,
-                        onTabSelected = { activeTab = it }
+                        onTabSelected = { activeTab = it },
+                        showRightPanel = showRightPanel,
+                        onToggleRightPanel = { showRightPanel = !showRightPanel }
                     )
                     
                     Divider(color = Gray200)
@@ -102,28 +107,31 @@ fun App(driverFactory: DatabaseDriverFactory) {
                     }
                 }
                 
-                // Divider
-                Divider(
-                    modifier = Modifier.fillMaxHeight().width(1.dp),
-                    color = Gray200
-                )
-                
-                // Suggestions Panel - Takes 1/3 of the space
-                SuggestionsPanel(
-                    selectedText = selectedText,
-                    fullText = editorText,
-                    onApplySuggestion = { suggestion ->
-                        editorText = suggestion
-                    },
-                    onAppendSuggestion = { suggestion ->
-                        editorText = if (editorText.endsWith(" ") || editorText.isEmpty()) {
-                            editorText + suggestion
-                        } else {
-                            editorText + " " + suggestion
-                        }
-                    },
-                    modifier = Modifier.weight(1f)
-                )
+                // Right Panel - Suggestions (collapsible)
+                if (showRightPanel) {
+                    // Divider
+                    Divider(
+                        modifier = Modifier.fillMaxHeight().width(1.dp),
+                        color = Gray200
+                    )
+                    
+                    // Suggestions Panel
+                    SuggestionsPanel(
+                        selectedText = selectedText,
+                        fullText = editorText,
+                        onApplySuggestion = { suggestion ->
+                            editorText = suggestion
+                        },
+                        onAppendSuggestion = { suggestion ->
+                            editorText = if (editorText.endsWith(" ") || editorText.isEmpty()) {
+                                editorText + suggestion
+                            } else {
+                                editorText + " " + suggestion
+                            }
+                        },
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
@@ -132,7 +140,9 @@ fun App(driverFactory: DatabaseDriverFactory) {
 @Composable
 private fun ModeTabSelector(
     activeTab: Int,
-    onTabSelected: (Int) -> Unit
+    onTabSelected: (Int) -> Unit,
+    showRightPanel: Boolean = true,
+    onToggleRightPanel: () -> Unit = {}
 ) {
     Surface(
         color = Gray50,
@@ -142,7 +152,8 @@ private fun ModeTabSelector(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             // Editor Tab
             TabButton(
@@ -179,6 +190,19 @@ private fun ModeTabSelector(
                 onClick = { onTabSelected(3) },
                 modifier = Modifier.weight(1f)
             )
+            
+            // Right panel toggle button
+            IconButton(
+                onClick = onToggleRightPanel,
+                modifier = Modifier.size(36.dp)
+            ) {
+                Icon(
+                    imageVector = if (showRightPanel) Icons.Default.Menu else Icons.Default.MenuOpen,
+                    contentDescription = if (showRightPanel) "Hide suggestions" else "Show suggestions",
+                    tint = Gray600,
+                    modifier = Modifier.size(22.dp)
+                )
+            }
         }
     }
 }

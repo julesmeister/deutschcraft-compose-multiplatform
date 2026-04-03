@@ -29,11 +29,11 @@ actual class DatabaseDriverFactory(private val context: Context) {
         RoomStudyRepository(database)
     }
 
-    val chatRepository: ChatRepository by lazy {
+    actual val chatRepository: ChatRepository by lazy {
         ChatRepository(database)
     }
 
-    val settingsRepository: AndroidSettingsRepository by lazy {
+    actual val settingsRepository: SettingsRepository by lazy {
         AndroidSettingsRepository(context)
     }
 

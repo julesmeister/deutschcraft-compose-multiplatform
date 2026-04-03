@@ -2,11 +2,15 @@ package data.db
 
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
+import data.repository.ChatRepository
+import data.repository.SqlDelightChatRepository
 import data.settings.DesktopSettingsRepository
+import data.settings.SettingsRepository
 import java.io.File
 
 actual class DatabaseDriverFactory {
-    val settingsRepository: DesktopSettingsRepository by lazy { DesktopSettingsRepository() }
+    actual val chatRepository: ChatRepository by lazy { SqlDelightChatRepository(createDriver()) }
+    actual val settingsRepository: SettingsRepository by lazy { DesktopSettingsRepository() }
     
     actual fun createDriver(): SqlDriver {
         val databasePath = getDatabasePath()
