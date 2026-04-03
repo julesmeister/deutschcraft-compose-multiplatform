@@ -13,7 +13,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -64,7 +64,7 @@ private fun Column(modifier: Modifier, content: @Composable () -> Unit) {
 
 @Composable
 fun M3ListDivider(modifier: Modifier = Modifier) {
-    HorizontalDivider(
+    Divider(
         modifier = modifier.padding(horizontal = LocalSpacing.current.md),
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
     )

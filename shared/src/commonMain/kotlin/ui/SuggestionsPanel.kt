@@ -5,12 +5,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Refresh
-import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -121,7 +120,7 @@ fun SuggestionsPanel(
             Triple("improve", "Improve", Icons.Default.Edit),
             Triple("grammar", "Grammar", Icons.Default.Menu),
             Triple("rephrase", "Rephrase", Icons.Default.Refresh),
-            Triple("expand", "Expand", Icons.Default.OpenInNew)
+            Triple("expand", "Expand", Icons.Default.Add)
         )
         
         FlowRow(
@@ -199,7 +198,7 @@ fun SuggestionsPanel(
                     Spacer(modifier = Modifier.width(8.dp))
                 } else {
                     Icon(
-                        imageVector = Icons.Default.Star,
+                        imageVector = Icons.Default.Add,
                         contentDescription = null,
                         modifier = Modifier.size(18.dp)
                     )
@@ -226,7 +225,7 @@ fun SuggestionsPanel(
                     enabled = currentSuggestion.isNotEmpty(),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(Icons.Default.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(modifier = Modifier.width(4.dp))
                     Text("Copy")
                 }
@@ -234,7 +233,6 @@ fun SuggestionsPanel(
         }
     }
 }
-
 @Composable
 private fun EmptyState() {
     Column(
@@ -251,7 +249,7 @@ private fun EmptyState() {
         ) {
             Box(contentAlignment = Alignment.Center) {
                 Icon(
-                    imageVector = Icons.Default.Edit,
+                    imageVector = Icons.Default.Star,
                     contentDescription = null,
                     tint = Gray400,
                     modifier = Modifier.size(32.dp)
