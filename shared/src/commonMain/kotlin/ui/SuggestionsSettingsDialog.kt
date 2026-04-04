@@ -67,7 +67,7 @@ fun SuggestionsSettingsDialog(
                     }
                 }
 
-                Divider(color = Gray200)
+                HorizontalDivider(color = Gray200)
 
                 // Model Selector using DCSelectorField
                 DCSelectorField(

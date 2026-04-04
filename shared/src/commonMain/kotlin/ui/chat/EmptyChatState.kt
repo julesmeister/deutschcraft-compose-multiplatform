@@ -51,7 +51,7 @@ internal fun EmptyChatState(modifier: Modifier = Modifier) {
             .graphicsLayer { scaleX = scale; scaleY = scale }
     ) {
         Icon(
-            imageVector = Icons.Default.Chat,
+            imageVector = Icons.AutoMirrored.Filled.Chat,
             contentDescription = null,
             tint = Gray300,
             modifier = Modifier.size(64.dp)

@@ -72,7 +72,7 @@ fun EditorPanel(
             onSaveClick = onSaveEssay
         )
         
-        Divider(color = Gray200)
+        HorizontalDivider(color = Gray200)
         
         // Text Editor
         Box(
@@ -136,7 +136,7 @@ fun EditorPanel(
             )
         }
         
-        Divider(color = Gray200)
+        HorizontalDivider(color = Gray200)
         
         // Status Bar
         EditorStatusBar(

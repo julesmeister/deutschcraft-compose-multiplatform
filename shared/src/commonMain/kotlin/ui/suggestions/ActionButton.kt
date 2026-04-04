@@ -80,7 +80,7 @@ internal fun ActionButton(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (isLoading) {
-                RotatingIcon(modifier = Modifier.size(16.dp)) { mod ->
+                ui.animations.RotatingIcon(modifier = Modifier.size(16.dp)) { mod ->
                     CircularProgressIndicator(
                         modifier = mod,
                         strokeWidth = 2.dp,
@@ -88,7 +88,7 @@ internal fun ActionButton(
                     )
                 }
             } else if (isActive) {
-                WiggleEffect(targetValue = 3f) { mod ->
+                ui.animations.WiggleEffect(targetValue = 3f) { mod ->
                     Icon(
                         imageVector = icon,
                         contentDescription = null,

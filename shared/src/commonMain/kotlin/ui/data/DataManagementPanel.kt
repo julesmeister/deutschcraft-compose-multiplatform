@@ -68,7 +68,7 @@ fun DataManagementPanel(
                     color = Gray600
                 )
                 
-                Divider(color = Gray200)
+                HorizontalDivider(color = Gray200)
                 
                 // Storage Statistics
                 stats?.let { dataStats ->
@@ -112,13 +112,13 @@ fun DataManagementPanel(
                     }
                 )
                 
-                Divider(color = Gray200)
+                HorizontalDivider(color = Gray200)
                 
                 // Chat History Cleanup
                 CleanupSection(
                     title = "Chat History",
                     description = "Delete old chat sessions and messages",
-                    icon = Icons.Filled.Chat,
+                    icon = Icons.AutoMirrored.Filled.Chat,
                     onClearLastWeek = {
                         showConfirmDialog = ConfirmAction.CHAT_LAST_WEEK
                     },
@@ -130,7 +130,7 @@ fun DataManagementPanel(
                     }
                 )
                 
-                Divider(color = Gray200)
+                HorizontalDivider(color = Gray200)
                 
                 // Vocabulary Cleanup
                 CleanupSection(
@@ -148,7 +148,7 @@ fun DataManagementPanel(
                     }
                 )
                 
-                Divider(color = Gray200)
+                HorizontalDivider(color = Gray200)
                 
                 // Grammar Mistakes Cleanup
                 CleanupSection(

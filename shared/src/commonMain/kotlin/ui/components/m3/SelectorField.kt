@@ -68,7 +68,7 @@ fun DCSelectorField(
                     color = if (value.isNotBlank()) M3OnSurface else M3OnSurfaceVariant,
                     modifier = Modifier.weight(1f),
                 )
-                Icon(Icons.Default.ArrowForward, null, tint = M3OnSurfaceVariant, modifier = Modifier.size(20.dp))
+                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = M3OnSurfaceVariant, modifier = Modifier.size(20.dp))
             }
         }
     }

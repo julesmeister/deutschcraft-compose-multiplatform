@@ -59,7 +59,7 @@ fun DateNavigationBar(
                     .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onPrevious() },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Default.KeyboardArrowLeft, null, tint = Color.White, modifier = Modifier.size(22.dp))
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, null, tint = Color.White, modifier = Modifier.size(22.dp))
             }
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -85,7 +85,7 @@ fun DateNavigationBar(
                     .clickable(indication = null, interactionSource = remember { MutableInteractionSource() }) { onNext() },
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Default.KeyboardArrowRight, null, tint = Color.White, modifier = Modifier.size(22.dp))
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = Color.White, modifier = Modifier.size(22.dp))
             }
         }
     }

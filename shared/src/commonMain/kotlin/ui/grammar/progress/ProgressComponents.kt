@@ -49,7 +49,7 @@ fun ProgressOverviewCard(stats: UserProgressStats, modifier: Modifier = Modifier
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = Icons.Default.TrendingUp,
+                        imageVector = Icons.AutoMirrored.Filled.TrendingUp,
                         contentDescription = null,
                         tint = Indigo,
                         modifier = Modifier.size(24.dp)
@@ -70,7 +70,7 @@ fun ProgressOverviewCard(stats: UserProgressStats, modifier: Modifier = Modifier
                 }
             }
 
-            Divider(color = Gray200)
+            HorizontalDivider(color = Gray200)
 
             // Stats in a row with dividers
             Row(
@@ -87,7 +87,7 @@ fun ProgressOverviewCard(stats: UserProgressStats, modifier: Modifier = Modifier
                 VerticalDivider(color = Gray200, modifier = Modifier.height(40.dp))
 
                 M3StatItem(
-                    icon = Icons.Default.MenuBook,
+                    icon = Icons.AutoMirrored.Filled.MenuBook,
                     value = stats.totalWordsWritten.toString(),
                     label = "Words",
                     accentColor = Color(0xFF4CAF50)

@@ -121,7 +121,7 @@ private fun CategoryOption(
                 contentAlignment = Alignment.Center,
             ) {
                 Icon(
-                    imageVector = Icons.Default.Label,
+                    imageVector = Icons.AutoMirrored.Filled.Label,
                     contentDescription = null,
                     tint = if (isSelected) Indigo else Gray400,
                     modifier = Modifier.size(14.dp),

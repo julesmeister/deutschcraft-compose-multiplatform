@@ -48,7 +48,7 @@ internal fun ChatHeader(
                         modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
-                            imageVector = if (showSessionList) Icons.Default.MenuOpen else Icons.Default.Menu,
+                            imageVector = if (showSessionList) Icons.AutoMirrored.Filled.MenuOpen else Icons.Default.Menu,
                             contentDescription = "Toggle sidebar",
                             tint = Gray600,
                             modifier = Modifier.size(20.dp)
@@ -105,7 +105,7 @@ internal fun ChatHeader(
                 }
             }
 
-            Divider(color = Gray200)
+            HorizontalDivider(color = Gray200)
         }
     }
 }

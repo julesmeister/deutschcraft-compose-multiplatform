@@ -87,7 +87,7 @@ fun DCOptionsSheet(
                     Icon(Icons.Default.Close, "Close", tint = M3OnSurfaceVariant)
                 }
             }
-            Divider(color = M3Outline, thickness = 0.5.dp, modifier = Modifier.padding(vertical = 4.dp))
+            HorizontalDivider(color = M3Outline, thickness = 0.5.dp, modifier = Modifier.padding(vertical = 4.dp))
             content()
         }
     }
@@ -123,6 +123,6 @@ fun DCSheetOptionRow(
             )
             Text(subtitle, fontSize = DeutschCraftTheme.fontSize.sm, color = M3OnSurfaceVariant)
         }
-        Icon(Icons.Default.ArrowForward, null, tint = Color(0xFFD1D5DB), modifier = Modifier.size(20.dp))
+        Icon(Icons.AutoMirrored.Filled.ArrowForward, null, tint = Color(0xFFD1D5DB), modifier = Modifier.size(20.dp))
     }
 }

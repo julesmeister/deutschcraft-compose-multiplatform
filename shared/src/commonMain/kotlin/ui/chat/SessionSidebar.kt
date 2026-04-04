@@ -95,7 +95,7 @@ internal fun SessionSidebar(
                 }
             }
 
-            Divider(color = Gray200)
+            HorizontalDivider(color = Gray200)
 
             // Category Picker Sheet
             if (showCategoryDialog) {

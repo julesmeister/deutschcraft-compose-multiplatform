@@ -97,7 +97,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
                         showRightPanel = showRightPanel,
                         onToggleRightPanel = { showRightPanel = !showRightPanel }
                     )
-                    Divider(color = Gray200)
+                    HorizontalDivider(color = Gray200)
                     
                     // Content based on selected tab - fills remaining space
                     Box(modifier = Modifier.weight(1f).fillMaxWidth().debugConstraints("App.kt Content Box")) {
@@ -153,7 +153,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
                 // Right Panel - Suggestions (collapsible)
                 if (showRightPanel) {
                     // Divider
-                    Divider(
+                    VerticalDivider(
                         modifier = Modifier.fillMaxHeight().width(1.dp),
                         color = Gray200
                     )
@@ -318,7 +318,7 @@ private fun ModeTabSelector(
             
             // Chat Tab
             TabButton(
-                icon = Icons.Default.Chat,
+                icon = Icons.AutoMirrored.Filled.Chat,
                 label = "Chat",
                 isSelected = activeTab == 1,
                 onClick = { onTabSelected(1) },
@@ -349,7 +349,7 @@ private fun ModeTabSelector(
                 modifier = Modifier.size(36.dp)
             ) {
                 Icon(
-                    imageVector = if (showRightPanel) Icons.Default.Menu else Icons.Default.MenuOpen,
+                    imageVector = if (showRightPanel) Icons.Default.Menu else Icons.AutoMirrored.Filled.MenuOpen,
                     contentDescription = if (showRightPanel) "Hide suggestions" else "Show suggestions",
                     tint = Gray600,
                     modifier = Modifier.size(22.dp)

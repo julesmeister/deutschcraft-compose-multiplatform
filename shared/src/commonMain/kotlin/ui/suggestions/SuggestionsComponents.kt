@@ -148,7 +148,7 @@ internal fun ChatSuggestionsContent(
         AnimatedVisibility(
             visible = selectedText.isNotBlank(),
             enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
-                    fadeIn(animationSpec = fadeTween()),
+                    fadeIn(animationSpec = ui.animations.fadeTween()),
             exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
         ) {
             Surface(
@@ -178,8 +178,8 @@ internal fun ChatSuggestionsContent(
         AnimatedVisibility(
             visible = currentSuggestion.isNotBlank(),
             enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
-                    slideInVertically(animationSpec = fadeTween()) { it / 4 } +
-                    fadeIn(animationSpec = fadeTween()),
+                    slideInVertically(animationSpec = ui.animations.fadeTween()) { it / 4 } +
+                    fadeIn(animationSpec = ui.animations.fadeTween()),
             exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
         ) {
             Surface(
@@ -204,7 +204,7 @@ internal fun ChatSuggestionsContent(
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    TypewriterText(
+                    ui.animations.TypewriterText(
                         text = currentSuggestion,
                         style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
                         typingDelayMs = 8,
@@ -264,7 +264,7 @@ internal fun ChatSuggestionsContent(
         AnimatedVisibility(
             visible = suggestions.isNotEmpty(),
             enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
-                    fadeIn(animationSpec = fadeTween()),
+                    fadeIn(animationSpec = ui.animations.fadeTween()),
             exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
         ) {
             Surface(
@@ -288,8 +288,8 @@ internal fun ChatSuggestionsContent(
                         }
                         AnimatedVisibility(
                             visible = itemVisible.value,
-                            enter = fadeIn(animationSpec = fadeTween()) + 
-                                    slideInVertically(animationSpec = fadeTween()) { it / 3 }
+                            enter = fadeIn(animationSpec = ui.animations.fadeTween()) + 
+                                    slideInVertically(animationSpec = ui.animations.fadeTween()) { it / 3 }
                         ) {
                             Row(
                                 modifier = Modifier
@@ -331,14 +331,14 @@ internal fun ChatSuggestionsContent(
         // Loading state with rotating animation
         AnimatedVisibility(
             visible = isGenerating && currentSuggestion.isBlank() && suggestions.isEmpty(),
-            enter = fadeIn(animationSpec = fadeTween()),
+            enter = fadeIn(animationSpec = ui.animations.fadeTween()),
             exit = fadeOut(animationSpec = tween(150))
         ) {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                RotatingIcon(modifier = Modifier.size(32.dp)) { mod ->
+                ui.animations.RotatingIcon(modifier = Modifier.size(32.dp)) { mod ->
                     CircularProgressIndicator(
                         color = Indigo, 
                         modifier = mod,

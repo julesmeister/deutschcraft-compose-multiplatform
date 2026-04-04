@@ -59,7 +59,7 @@ fun M3ListRow(
 
 @Composable
 fun M3ListDivider(modifier: Modifier = Modifier) {
-    Divider(
+    HorizontalDivider(
         modifier = modifier.padding(horizontal = LocalSpacing.current.md),
         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
     )

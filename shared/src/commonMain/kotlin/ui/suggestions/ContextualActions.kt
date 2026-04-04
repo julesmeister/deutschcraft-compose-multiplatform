@@ -85,9 +85,7 @@ internal fun ContextualActions(
             colors = ButtonDefaults.outlinedButtonColors(
                 contentColor = Indigo
             ),
-            border = ButtonDefaults.outlinedButtonBorder.copy(
-                brush = androidx.compose.ui.graphics.SolidColor(Indigo.copy(alpha = 0.5f))
-            )
+            border = androidx.compose.material3.ButtonDefaults.outlinedButtonBorder(enabled = !isGenerating)
         ) {
             if (isGenerating && activeAction == "continue") {
                 CircularProgressIndicator(

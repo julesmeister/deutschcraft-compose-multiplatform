@@ -209,7 +209,7 @@ fun ChatPanel(
             }
         }
         
-        Divider(color = Gray200)
+        HorizontalDivider(color = Gray200)
         
         // Input area
         Surface(
@@ -291,7 +291,7 @@ fun ChatPanel(
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
-                        imageVector = if (isGenerating) Icons.Default.Close else Icons.Default.Send,
+                        imageVector = if (isGenerating) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
                         contentDescription = if (isGenerating) "Stop" else "Send",
                         tint = iconTint,
                         modifier = Modifier

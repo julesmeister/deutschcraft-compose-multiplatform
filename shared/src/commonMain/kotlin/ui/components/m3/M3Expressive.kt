@@ -120,7 +120,7 @@ fun M3TonalChip(
         Text(text = text, color = textColor, fontSize = DeutschCraftTheme.fontSize.base, fontWeight = FontWeight.SemiBold)
         if (trailingChevron) {
             Spacer(modifier = Modifier.width(4.dp))
-            Icon(imageVector = Icons.Default.KeyboardArrowRight, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+            Icon(imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
         }
     }
 }

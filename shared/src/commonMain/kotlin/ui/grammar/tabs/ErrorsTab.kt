@@ -130,7 +130,7 @@ fun ErrorCard(error: GrammarError) {
                 }
 
                 Icon(
-                    imageVector = Icons.Default.ArrowForward,
+                    imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                     contentDescription = null,
                     tint = theme.Gray400,
                     modifier = Modifier.align(Alignment.CenterVertically)

@@ -143,7 +143,7 @@ fun DCMultiPageDialog(
                                 ) {
                                     Text("Next", fontWeight = FontWeight.SemiBold)
                                     Spacer(modifier = Modifier.width(4.dp))
-                                    Icon(Icons.Default.ArrowForward, null, modifier = Modifier.size(16.dp))
+                                    Icon(Icons.AutoMirrored.Filled.ArrowForward, null, modifier = Modifier.size(16.dp))
                                 }
                             } else {
                                 Button(

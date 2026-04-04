@@ -19,7 +19,7 @@ fun EditorStatusBar(
     wordCount: Int,
     charCount: Int
 ) {
-    Divider(color = Gray200)
+    HorizontalDivider(color = Gray200)
     
     Surface(
         tonalElevation = 0.dp,

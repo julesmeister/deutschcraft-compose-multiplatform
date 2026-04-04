@@ -92,7 +92,7 @@ internal fun ChatInputArea(
                 modifier = Modifier.size(48.dp)
             ) {
                 Icon(
-                    imageVector = if (isGenerating) Icons.Default.Close else Icons.Default.Send,
+                    imageVector = if (isGenerating) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
                     contentDescription = if (isGenerating) "Stop" else "Send",
                     tint = when {
                         isGenerating -> Color(0xFFD32F2F)

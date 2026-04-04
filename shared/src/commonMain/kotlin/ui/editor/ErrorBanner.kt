@@ -103,5 +103,5 @@ fun ErrorBanner(
             }
         }
     }
-    Divider(color = Gray200)
+    HorizontalDivider(color = Gray200)
 }

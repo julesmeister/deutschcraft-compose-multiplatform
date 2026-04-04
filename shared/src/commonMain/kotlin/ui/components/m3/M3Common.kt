@@ -58,7 +58,7 @@ fun DCBackButton(onClick: () -> Unit) {
             modifier = Modifier.size(40.dp).clip(CircleShape).background(AppBarBackButtonBg),
             contentAlignment = Alignment.Center,
         ) {
-            Icon(Icons.Filled.ArrowBack, null, tint = Color.White)
+            Icon(Icons.AutoMirrored.Filled.ArrowBack, null, tint = Color.White)
         }
     }
 }
