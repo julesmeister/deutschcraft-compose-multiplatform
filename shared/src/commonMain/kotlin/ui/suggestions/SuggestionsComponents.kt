@@ -37,47 +37,11 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.settings.FontSize
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
-import service.OllamaService
-import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import theme.*
-import ui.suggestions.animations.RotatingIcon
-import ui.suggestions.animations.WiggleEffect
 import ui.suggestions.animations.TypewriterText
 import ui.suggestions.animations.fadeTween
 
-internal fun generateSuggestion(
-    scope: CoroutineScope,
-    ollamaService: OllamaService,
-    selectedText: String,
-    fullText: String,
-    suggestionType: String,
-    model: String,
-    onStart: () -> Unit,
-    onChunk: (String) -> Unit,
-    onComplete: () -> Unit,
-    onError: (String) -> Unit
-) {
-    scope.launch {
-        onStart()
-        try {
-            ollamaService.generateSuggestion(
-                text = selectedText,
-                context = "Full document context: ${fullText.take(500)}",
-                model = model,
-                suggestionType = suggestionType
-            ).collect { chunk ->
-                onChunk(chunk)
-            }
-            onComplete()
-        } catch (e: Exception) {
-            onError(e.message ?: "Unknown error")
-        }
-    }
-}
 
 @Composable
 internal fun EmptyState(
@@ -465,95 +429,3 @@ internal fun ChatContextualActions(
     }
 }
 
-@Composable
-internal fun ActionButton(
-    icon: ImageVector,
-    label: String,
-    isActive: Boolean,
-    isLoading: Boolean,
-    isEnabled: Boolean = true,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val interactionSource = remember { MutableInteractionSource() }
-    val isPressed by interactionSource.collectIsPressedAsState()
-    
-    val scale by animateFloatAsState(
-        targetValue = when {
-            !isEnabled -> 1f
-            isPressed -> 0.95f
-            else -> 1f
-        },
-        animationSpec = spring(stiffness = Spring.StiffnessHigh),
-        label = "button_scale"
-    )
-    
-    val bgColor by animateColorAsState(
-        targetValue = when {
-            !isEnabled -> Gray200
-            isActive -> Indigo.copy(alpha = 0.15f)
-            else -> Gray100
-        },
-        animationSpec = tween(200),
-        label = "button_bg"
-    )
-    
-    val contentColor by animateColorAsState(
-        targetValue = when {
-            !isEnabled -> Gray400
-            isActive -> Indigo
-            else -> Gray700
-        },
-        animationSpec = tween(200),
-        label = "button_content"
-    )
-    
-    Surface(
-        color = bgColor,
-        shape = MaterialTheme.shapes.small,
-        onClick = { if (isEnabled && !isLoading) onClick() },
-        enabled = isEnabled && !isLoading,
-        modifier = modifier
-            .height(48.dp)
-            .scale(scale),
-        interactionSource = interactionSource
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            if (isLoading) {
-                RotatingIcon(modifier = Modifier.size(16.dp)) { mod ->
-                    CircularProgressIndicator(
-                        modifier = mod,
-                        strokeWidth = 2.dp,
-                        color = Indigo
-                    )
-                }
-            } else if (isActive) {
-                WiggleEffect(targetValue = 3f) { mod ->
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = contentColor,
-                        modifier = mod.then(Modifier.size(18.dp))
-                    )
-                }
-            } else {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = contentColor,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelMedium,
-                color = contentColor,
-                fontWeight = if (isActive) FontWeight.SemiBold else FontWeight.Medium
-            )
-        }
-    }
-}

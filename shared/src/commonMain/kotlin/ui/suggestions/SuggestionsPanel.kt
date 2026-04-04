@@ -30,11 +30,7 @@ import ui.components.m3.M3IconBox
 import ui.suggestions.animations.PulsingIcon
 import ui.suggestions.animations.RotatingIcon
 
-enum class SuggestionsPanelMode {
-    EDITOR,  // For text editing (grammar, improve, rephrase)
-    CHAT     // For chat (title suggestions, directions, translate)
-}
-
+import ui.suggestions.SuggestionsPanelMode
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SuggestionsPanel(
@@ -127,14 +123,15 @@ fun SuggestionsPanel(
                             fontSize = fontSize
                         )
                     } else {
-                        println("[DEBUG COMPOSE] About to create CHAT Column with verticalScroll")
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .verticalScroll(rememberScrollState())
-                                .padding(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
-                        ) {
+                        // FIX: Wrap in Box to ensure bounded constraints during AnimatedContent transition
+                        Box(modifier = Modifier.fillMaxSize()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .verticalScroll(rememberScrollState())
+                                    .padding(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
                             // Auto-generated follow-up suggestions (shown when AI replies)
                             if (autoSuggestions.isNotEmpty()) {
                                 AutoSuggestionsContent(
@@ -162,6 +159,7 @@ fun SuggestionsPanel(
                                 }
                             )
                         }
+                    }
                     }
                 }
                 SuggestionsPanelMode.EDITOR -> {
