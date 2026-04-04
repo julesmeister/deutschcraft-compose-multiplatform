@@ -1,5 +1,16 @@
 package ui.suggestions
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -13,6 +24,11 @@ import androidx.compose.material.icons.filled.Title
 import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -24,7 +40,14 @@ import data.settings.FontSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import service.OllamaService
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.graphicsLayer
 import theme.*
+import ui.suggestions.animations.RotatingIcon
+import ui.suggestions.animations.WiggleEffect
+import ui.suggestions.animations.TypewriterText
+import ui.suggestions.animations.fadeTween
 
 internal fun generateSuggestion(
     scope: CoroutineScope,
@@ -61,10 +84,30 @@ internal fun EmptyState(
     message: String = "Select text from the editor to get AI suggestions. Try selecting a sentence or paragraph.",
     fontSize: FontSize = FontSize.MEDIUM
 ) {
+    var visible by remember { mutableStateOf(false) }
+    
+    LaunchedEffect(Unit) {
+        visible = true
+    }
+    
+    val scale by animateFloatAsState(
+        targetValue = if (visible) 1f else 0.9f,
+        animationSpec = spring(stiffness = Spring.StiffnessMedium),
+        label = "empty_scale"
+    )
+    
+    val alpha by animateFloatAsState(
+        targetValue = if (visible) 1f else 0f,
+        animationSpec = tween(400, easing = FastOutSlowInEasing),
+        label = "empty_alpha"
+    )
+    
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(24.dp),
+            .padding(24.dp)
+            .scale(scale)
+            .alpha(alpha),
         contentAlignment = Alignment.Center
     ) {
         NoDataPlaceholder(
@@ -134,7 +177,12 @@ internal fun ChatSuggestionsContent(
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         // Selected text display (if any)
-        if (selectedText.isNotBlank()) {
+        AnimatedVisibility(
+            visible = selectedText.isNotBlank(),
+            enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                    fadeIn(animationSpec = fadeTween()),
+            exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
+        ) {
             Surface(
                 color = Gray100,
                 shape = MaterialTheme.shapes.small,
@@ -159,7 +207,13 @@ internal fun ChatSuggestionsContent(
         }
         
         // Current suggestion display
-        if (currentSuggestion.isNotBlank()) {
+        AnimatedVisibility(
+            visible = currentSuggestion.isNotBlank(),
+            enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                    slideInVertically(animationSpec = fadeTween()) { it / 4 } +
+                    fadeIn(animationSpec = fadeTween()),
+            exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
+        ) {
             Surface(
                 color = Indigo.copy(alpha = 0.05f),
                 shape = MaterialTheme.shapes.small,
@@ -182,22 +236,37 @@ internal fun ChatSuggestionsContent(
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    Text(
+                    TypewriterText(
                         text = currentSuggestion,
                         style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
-                        color = Gray800,
-                        lineHeight = (baseFontSize * 1.5).sp,
+                        typingDelayMs = 8,
                         modifier = Modifier.padding(vertical = 4.dp)
                     )
                     
-                    // Action buttons
+                    // Action buttons with bounce animation
                     if (activeAction == "title") {
                         Spacer(modifier = Modifier.height(12.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            var buttonVisible by remember { mutableStateOf(false) }
+                            LaunchedEffect(currentSuggestion) {
+                                buttonVisible = false
+                                kotlinx.coroutines.delay(300)
+                                buttonVisible = true
+                            }
+                            val buttonScale by animateFloatAsState(
+                                targetValue = if (buttonVisible) 1f else 0.8f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioHighBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                ),
+                                label = "button_bounce"
+                            )
                             Button(
                                 onClick = onApply,
                                 colors = ButtonDefaults.buttonColors(containerColor = Indigo),
-                                modifier = Modifier.height(36.dp)
+                                modifier = Modifier
+                                    .height(36.dp)
+                                    .graphicsLayer { scaleX = buttonScale; scaleY = buttonScale }
                             ) {
                                 Icon(Icons.Default.Check, null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(4.dp))
@@ -223,8 +292,13 @@ internal fun ChatSuggestionsContent(
             }
         }
         
-        // Suggestions list (for directions)
-        if (suggestions.isNotEmpty()) {
+        // Suggestions list (for directions) with staggered animation
+        AnimatedVisibility(
+            visible = suggestions.isNotEmpty(),
+            enter = expandVertically(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                    fadeIn(animationSpec = fadeTween()),
+            exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
+        ) {
             Surface(
                 color = Gray50,
                 shape = MaterialTheme.shapes.small,
@@ -239,26 +313,40 @@ internal fun ChatSuggestionsContent(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     suggestions.forEachIndexed { index, suggestion ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 6.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        val itemVisible = remember { mutableStateOf(false) }
+                        LaunchedEffect(suggestions) {
+                            kotlinx.coroutines.delay(index * 50L)
+                            itemVisible.value = true
+                        }
+                        AnimatedVisibility(
+                            visible = itemVisible.value,
+                            enter = fadeIn(animationSpec = fadeTween()) + 
+                                    slideInVertically(animationSpec = fadeTween()) { it / 3 }
                         ) {
-                            Text(
-                                text = "${index + 1}.",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    fontSize = baseFontSize.sp,
-                                    fontWeight = FontWeight.SemiBold
-                                ),
-                                color = Indigo
-                            )
-                            Text(
-                                text = suggestion,
-                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
-                                color = Gray800,
-                                modifier = Modifier.weight(1f)
-                            )
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 6.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Text(
+                                    text = "${index + 1}.",
+                                    style = MaterialTheme.typography.bodyMedium.copy(
+                                        fontSize = baseFontSize.sp,
+                                        fontWeight = FontWeight.SemiBold
+                                    ),
+                                    color = Indigo
+                                )
+                                Text(
+                                    text = suggestion,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
+                                    color = Gray800,
+                                    modifier = Modifier.weight(1f)
+                                )
+                            }
+                        }
+                        if (index < suggestions.size - 1) {
+                            Divider(color = Gray200, modifier = Modifier.padding(vertical = 4.dp))
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -272,18 +360,33 @@ internal fun ChatSuggestionsContent(
             }
         }
         
-        // Loading state
-        if (isGenerating && currentSuggestion.isBlank() && suggestions.isEmpty()) {
+        // Loading state with rotating animation
+        AnimatedVisibility(
+            visible = isGenerating && currentSuggestion.isBlank() && suggestions.isEmpty(),
+            enter = fadeIn(animationSpec = fadeTween()),
+            exit = fadeOut(animationSpec = tween(150))
+        ) {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center
             ) {
-                CircularProgressIndicator(color = Indigo, modifier = Modifier.size(32.dp))
+                RotatingIcon(modifier = Modifier.size(32.dp)) { mod ->
+                    CircularProgressIndicator(
+                        color = Indigo, 
+                        modifier = mod,
+                        strokeWidth = 3.dp
+                    )
+                }
             }
         }
         
         // Empty state with hint
-        if (!isGenerating && currentSuggestion.isBlank() && suggestions.isEmpty()) {
+        AnimatedVisibility(
+            visible = !isGenerating && currentSuggestion.isBlank() && suggestions.isEmpty(),
+            enter = fadeIn(animationSpec = tween(400)) + 
+                    slideInVertically(animationSpec = fadeTween()) { it / 4 },
+            exit = fadeOut(animationSpec = tween(200))
+        ) {
             Text(
                 text = "Select a word from chat or use the buttons below for AI assistance",
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = (baseFontSize * 0.875).sp),
@@ -298,7 +401,7 @@ internal fun ChatSuggestionsContent(
 @Composable
 internal fun ChatContextualActions(
     selectedText: String,
-    chatMessages: List<ui.ChatMessage>,
+    chatMessages: List<data.repository.ChatMessage>,
     isGenerating: Boolean,
     activeAction: String?,
     onSuggestTitle: () -> Unit,
@@ -372,23 +475,48 @@ internal fun ActionButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val bgColor = when {
-        !isEnabled -> Gray200
-        isActive -> Indigo.copy(alpha = 0.15f)
-        else -> Gray100
-    }
-    val contentColor = when {
-        !isEnabled -> Gray400
-        isActive -> Indigo
-        else -> Gray700
-    }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    
+    val scale by animateFloatAsState(
+        targetValue = when {
+            !isEnabled -> 1f
+            isPressed -> 0.95f
+            else -> 1f
+        },
+        animationSpec = spring(stiffness = Spring.StiffnessHigh),
+        label = "button_scale"
+    )
+    
+    val bgColor by animateColorAsState(
+        targetValue = when {
+            !isEnabled -> Gray200
+            isActive -> Indigo.copy(alpha = 0.15f)
+            else -> Gray100
+        },
+        animationSpec = tween(200),
+        label = "button_bg"
+    )
+    
+    val contentColor by animateColorAsState(
+        targetValue = when {
+            !isEnabled -> Gray400
+            isActive -> Indigo
+            else -> Gray700
+        },
+        animationSpec = tween(200),
+        label = "button_content"
+    )
     
     Surface(
         color = bgColor,
         shape = MaterialTheme.shapes.small,
         onClick = { if (isEnabled && !isLoading) onClick() },
         enabled = isEnabled && !isLoading,
-        modifier = modifier.height(48.dp)
+        modifier = modifier
+            .height(48.dp)
+            .scale(scale),
+        interactionSource = interactionSource
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp),
@@ -396,11 +524,22 @@ internal fun ActionButton(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             if (isLoading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(16.dp),
-                    strokeWidth = 2.dp,
-                    color = Indigo
-                )
+                RotatingIcon(modifier = Modifier.size(16.dp)) { mod ->
+                    CircularProgressIndicator(
+                        modifier = mod,
+                        strokeWidth = 2.dp,
+                        color = Indigo
+                    )
+                }
+            } else if (isActive) {
+                WiggleEffect(targetValue = 3f) { mod ->
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        tint = contentColor,
+                        modifier = mod.then(Modifier.size(18.dp))
+                    )
+                }
             } else {
                 Icon(
                     imageVector = icon,

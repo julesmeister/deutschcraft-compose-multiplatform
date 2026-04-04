@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.BorderStroke
@@ -26,8 +27,8 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import data.repository.ChatSession
 import theme.*
-import ui.chat.ConnectionStatusBanner
-import ui.chat.CategoryPickerDialog
+import ui.components.m3.DCChipPickerSheet
+import ui.chat.debugConstraints
 
 @Composable
 internal fun SessionSidebar(
@@ -47,7 +48,7 @@ internal fun SessionSidebar(
         shape = RoundedCornerShape(12.dp),
         border = BorderStroke(1.dp, Gray200),
         modifier = modifier
-            .fillMaxHeight()
+            .fillMaxSize()
             .padding(8.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
@@ -96,22 +97,45 @@ internal fun SessionSidebar(
 
             Divider(color = Gray200)
 
-            // Category Dialog
+            // Category Picker Sheet
             if (showCategoryDialog) {
-                CategoryPickerDialog(
-                    categories = categories,
-                    selectedCategory = selectedCategory,
-                    onCategorySelected = { category ->
-                        onCategorySelected(category)
+                val allOptions = listOf("All") + categories
+                DCChipPickerSheet(
+                    title = "Filter by Category",
+                    subtitle = "Select a category to filter conversations",
+                    options = allOptions,
+                    selected = selectedCategory ?: "All",
+                    accentColor = Indigo,
+                    onSelected = { option ->
+                        onCategorySelected(if (option == "All") null else option)
                         showCategoryDialog = false
                     },
-                    onDismiss = { showCategoryDialog = false }
+                    onDismiss = { showCategoryDialog = false },
+                    chipAvatar = { option, isSelected ->
+                        if (isSelected) {
+                            Text(
+                                text = "✓",
+                                color = Color.White,
+                                fontSize = DeutschCraftTheme.fontSize.base,
+                                fontWeight = FontWeight.Bold
+                            )
+                        } else {
+                            Text(
+                                text = when (option) {
+                                    "All" -> "◦"
+                                    else -> option.take(1).uppercase()
+                                },
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                color = Indigo
+                            )
+                        }
+                    }
                 )
             }
 
             // Session list
             LazyColumn(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f).debugConstraints("SessionSidebar LazyColumn"),
                 contentPadding = PaddingValues(8.dp),
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {

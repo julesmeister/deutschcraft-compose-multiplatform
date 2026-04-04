@@ -24,6 +24,9 @@ fun EditorPanel(
     errorMessage: String? = null,
     onErrorDismiss: () -> Unit = {},
     fontSize: data.settings.FontSize = data.settings.FontSize.MEDIUM,
+    currentEssayTitle: String? = null,
+    onOpenEssay: () -> Unit = {},
+    onSaveEssay: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(text)) }
@@ -58,12 +61,15 @@ fun EditorPanel(
         // Toolbar
         EditorToolbar(
             text = text,
+            currentEssayTitle = currentEssayTitle,
             onAnalyzeClick = onAnalyzeClick,
             onClearClick = { 
                 textFieldValue = TextFieldValue("")
                 onTextChange("")
             },
-            onRefreshClick = { /* Refresh action */ }
+            onRefreshClick = { /* Refresh action */ },
+            onOpenClick = onOpenEssay,
+            onSaveClick = onSaveEssay
         )
         
         Divider(color = Gray200)

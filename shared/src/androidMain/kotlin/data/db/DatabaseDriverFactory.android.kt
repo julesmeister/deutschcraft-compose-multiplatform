@@ -13,8 +13,10 @@ import data.model.StudyTopic
 import data.model.TopicCategory
 import data.model.VocabularyItem
 import data.repository.ChatRepository
+import data.repository.EssayRepository
 import data.repository.RoomStudyRepository
 import data.settings.SettingsRepository
+import data.repository.SqlDelightEssayRepository
 
 /**
  * Android implementation using Room for persistence.
@@ -31,6 +33,10 @@ actual class DatabaseDriverFactory(private val context: Context) {
 
     actual val chatRepository: ChatRepository by lazy {
         ChatRepository(database)
+    }
+
+    actual val essayRepository: EssayRepository by lazy {
+        SqlDelightEssayRepository(createDriver())
     }
 
     actual val settingsRepository: SettingsRepository by lazy {

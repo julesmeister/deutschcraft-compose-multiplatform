@@ -36,7 +36,7 @@ import theme.Gray100
 import theme.Gray600
 import theme.Gray800
 import theme.Indigo
-import ui.ChatMessage
+import data.repository.ChatMessage
 
 @Composable
 fun ChatBubble(
@@ -79,7 +79,7 @@ fun ChatBubble(
         if (isHovered && isUser) {
             IconButton(
                 onClick = {
-                    clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.text))
+                    clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.content))
                 },
                 modifier = Modifier.size(24.dp)
             ) {
@@ -110,7 +110,7 @@ fun ChatBubble(
                 )
             ) {
                 Text(
-                    text = message.text,
+                    text = message.content,
                     style = MaterialTheme.typography.bodyMedium,
                     color = textColor,
                     modifier = Modifier.padding(14.dp)
@@ -121,7 +121,7 @@ fun ChatBubble(
             if (isHovered && !isUser) {
                 IconButton(
                     onClick = {
-                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.text))
+                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.content))
                     },
                     modifier = Modifier
                         .align(Alignment.TopEnd)

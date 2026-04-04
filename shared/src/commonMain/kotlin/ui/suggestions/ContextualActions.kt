@@ -1,16 +1,23 @@
 package ui.suggestions
 
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.draw.scale
 import theme.*
 
 @Composable
@@ -109,22 +116,42 @@ private fun ActionButton(
     isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val backgroundColor = when {
-        isActive -> Indigo
-        else -> Gray100
-    }
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
     
-    val contentColor = when {
-        isActive -> androidx.compose.ui.graphics.Color.White
-        else -> Gray700
-    }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed && !isLoading) 0.95f else 1f,
+        animationSpec = spring(stiffness = Spring.StiffnessHigh),
+        label = "button_scale"
+    )
+    
+    val backgroundColor by animateColorAsState(
+        targetValue = when {
+            isActive -> Indigo
+            else -> Gray100
+        },
+        animationSpec = tween(200),
+        label = "button_bg"
+    )
+    
+    val contentColor by animateColorAsState(
+        targetValue = when {
+            isActive -> androidx.compose.ui.graphics.Color.White
+            else -> Gray700
+        },
+        animationSpec = tween(200),
+        label = "button_content"
+    )
     
     Surface(
         onClick = onClick,
         enabled = !isLoading,
         color = backgroundColor,
         shape = RoundedCornerShape(20.dp),
-        modifier = modifier.height(56.dp)
+        modifier = modifier
+            .height(56.dp)
+            .scale(scale),
+        interactionSource = interactionSource
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,

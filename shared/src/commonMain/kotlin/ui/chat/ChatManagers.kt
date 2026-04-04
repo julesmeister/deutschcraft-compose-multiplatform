@@ -5,6 +5,7 @@ import data.repository.ChatMessage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import service.OllamaService
 
 /**
  * Handles chat session management operations.
@@ -119,13 +120,7 @@ class ChatMessageManager(
             if (!isActive) return@launch
 
             // Get context messages (up to the user message before this AI response)
-            val contextMessages = updatedMessages.take(messageIndex).map {
-                ui.ChatMessage(
-                    text = it.content,
-                    isUser = it.isUser,
-                    timestamp = it.timestamp.toEpochMilliseconds()
-                )
-            }
+            val contextMessages = updatedMessages.take(messageIndex)
 
             // Generate new response
             onGeneratingChanged(true)

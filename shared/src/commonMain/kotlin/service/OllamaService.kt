@@ -246,13 +246,13 @@ Provide exactly 3 suggestions in German, numbered 1., 2., 3. Keep each suggestio
     }
     
     suspend fun chat(
-        messages: List<ui.ChatMessage>,
+        messages: List<data.repository.ChatMessage>,
         systemContext: String,
         model: String = defaultModel
     ): String {
         val conversationHistory = messages.joinToString("\n") { msg ->
             val role = if (msg.isUser) "User" else "Assistant"
-            "$role: ${msg.text}"
+            "$role: ${msg.content}"
         }
         
         val prompt = """$systemContext
@@ -332,12 +332,12 @@ As the Assistant, provide a helpful response in German:"""
      * Suggest a new title for a chat session based on the conversation content.
      */
     suspend fun suggestChatTitle(
-        messages: List<ui.ChatMessage>,
+        messages: List<data.repository.ChatMessage>,
         model: String = defaultModel
     ): String {
         val conversationPreview = messages.takeLast(6).joinToString("\n") { msg ->
             val role = if (msg.isUser) "User" else "Assistant"
-            "$role: ${msg.text.take(100)}"
+            "$role: ${msg.content.take(100)}"
         }
         
         val prompt = """Based on the following German conversation, suggest a short, descriptive title (2-4 words max) that captures the main topic or theme.
@@ -355,12 +355,12 @@ Provide only the title, nothing else:"""
      * Suggest conversation directions or topics to explore based on current chat.
      */
     suspend fun suggestConversationDirections(
-        messages: List<ui.ChatMessage>,
+        messages: List<data.repository.ChatMessage>,
         model: String = defaultModel
     ): List<String> {
         val conversationHistory = messages.takeLast(10).joinToString("\n") { msg ->
             val role = if (msg.isUser) "User" else "Assistant"
-            "$role: ${msg.text.take(80)}"
+            "$role: ${msg.content.take(80)}"
         }
         
         val prompt = """Based on this German conversation, suggest 3 different directions or topics the user could explore next to continue practicing German.
@@ -429,17 +429,17 @@ Meaning: [English translation of example]"""
      * This helps users continue the conversation naturally.
      */
     suspend fun suggestUserResponses(
-        messages: List<ui.ChatMessage>,
+        messages: List<data.repository.ChatMessage>,
         model: String = defaultModel
     ): List<String> {
         if (messages.isEmpty()) return emptyList()
         
         val conversationHistory = messages.takeLast(8).joinToString("\n") { msg ->
             val role = if (msg.isUser) "User" else "Assistant"
-            "$role: ${msg.text.take(100)}"
+            "$role: ${msg.content.take(100)}"
         }
         
-        val lastAiMessage = messages.lastOrNull { !it.isUser }?.text?.take(150) ?: ""
+        val lastAiMessage = messages.lastOrNull { !it.isUser }?.content?.take(150) ?: ""
         
         val prompt = """Based on this German conversation, suggest 3 different ways the user could respond to continue the conversation naturally.
 Each suggestion should be a brief response in German (5-15 words) that makes sense given what the AI just said.

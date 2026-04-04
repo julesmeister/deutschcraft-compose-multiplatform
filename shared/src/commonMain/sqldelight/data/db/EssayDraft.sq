@@ -1,0 +1,51 @@
+CREATE TABLE essayDraft (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+selectAllEssays:
+SELECT * FROM essayDraft
+ORDER BY updated_at DESC;
+
+selectEssayById:
+SELECT * FROM essayDraft
+WHERE id = :id;
+
+insertEssay:
+INSERT INTO essayDraft(title, content, created_at, updated_at)
+VALUES (:title, :content, :created_at, :updated_at);
+
+updateEssay:
+UPDATE essayDraft
+SET title = :title,
+    content = :content,
+    updated_at = :updated_at
+WHERE id = :id;
+
+deleteEssay:
+DELETE FROM essayDraft
+WHERE id = :id;
+
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+-- Data cleanup queries
+deleteEssaysBeforeDate:
+DELETE FROM essayDraft
+WHERE updated_at < :before_timestamp;
+
+countEssays:
+SELECT COUNT(*) FROM essayDraft;
+
+countEssaysBeforeDate:
+SELECT COUNT(*) FROM essayDraft
+WHERE updated_at < :before_timestamp;
+
+searchEssays:
+SELECT * FROM essayDraft
+WHERE title LIKE '%' || :query || '%'
+   OR content LIKE '%' || :query || '%'
+ORDER BY updated_at DESC;

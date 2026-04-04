@@ -4,10 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -31,17 +30,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import data.repository.ChatMessage
+import kotlinx.datetime.Instant
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import service.OllamaService
 import theme.*
 import ui.chat.ChatBubble
 
-data class ChatMessage(
-    val text: String,
-    val isUser: Boolean,
-    val timestamp: Long = System.currentTimeMillis()
-)
 
 @Composable
 fun ChatPanel(
@@ -79,7 +75,13 @@ fun ChatPanel(
         if (inputText.isBlank() || isGenerating) return
         
         val userMessage = inputText.trim()
-        messages = messages + ChatMessage(userMessage, isUser = true)
+        messages = messages + ChatMessage(
+            id = 0,
+            sessionId = 0,
+            content = userMessage,
+            isUser = true,
+            timestamp = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+        )
         inputText = ""
         
         currentJob = scope.launch {
@@ -91,14 +93,29 @@ fun ChatPanel(
                     systemContext = systemContext,
                     model = selectedModel
                 )
-                messages = messages + ChatMessage(response, isUser = false)
+                messages = messages + ChatMessage(
+                    id = 0,
+                    sessionId = 0,
+                    content = response,
+                    isUser = false,
+                    timestamp = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                )
             } catch (e: Exception) {
                 if (e is kotlinx.coroutines.CancellationException) {
-                    messages = messages + ChatMessage("Generation stopped by user.", isUser = false)
+                    messages = messages + ChatMessage(
+                        id = 0,
+                        sessionId = 0,
+                        content = "Generation stopped by user.",
+                        isUser = false,
+                        timestamp = Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                    )
                 } else {
                     messages = messages + ChatMessage(
-                        "Sorry, I encountered an error: ${e.message}",
-                        isUser = false
+                        id = 0,
+                        sessionId = 0,
+                        content = "Sorry, I encountered an error: ${e.message}",
+                        isUser = false,
+                        timestamp = Instant.fromEpochMilliseconds(System.currentTimeMillis())
                     )
                 }
             } finally {
@@ -156,35 +173,36 @@ fun ChatPanel(
                     modifier = Modifier.align(Alignment.Center)
                 )
             } else {
-                Column(
+                LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
-                        .verticalScroll(rememberScrollState())
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    messages.forEach { message ->
+                    items(messages.size) { index ->
                         ChatBubble(
-                            message = message,
+                            message = messages[index],
                             modifier = Modifier.fillMaxWidth()
                         )
                     }
                     if (isGenerating) {
-                        Row(
-                            modifier = Modifier.padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = Indigo
-                            )
-                            Text(
-                                text = "AI is typing...",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Gray500
-                            )
+                        item {
+                            Row(
+                                modifier = Modifier.padding(top = 8.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp,
+                                    color = Indigo
+                                )
+                                Text(
+                                    text = "AI is typing...",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = Gray500
+                                )
+                            }
                         }
                     }
                 }

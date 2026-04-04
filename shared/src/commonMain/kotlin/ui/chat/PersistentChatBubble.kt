@@ -115,7 +115,9 @@ internal fun PersistentChatBubble(
                         topEnd = 16.dp,
                         bottomStart = if (isUser) 16.dp else 4.dp,
                         bottomEnd = if (isUser) 4.dp else 16.dp
-                    )
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                    border = null
                 ) {
                     SelectionContainer(
                         modifier = Modifier.padding(12.dp)

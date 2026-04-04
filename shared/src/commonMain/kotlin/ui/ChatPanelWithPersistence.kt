@@ -66,7 +66,7 @@ fun ChatPanelWithPersistence(
 
     // Notify messages change
     LaunchedEffect(messages) {
-        onMessagesChange(messages.map { ui.ChatMessage(it.content, it.isUser, it.timestamp.toEpochMilliseconds()) })
+        onMessagesChange(messages)
     }
 
     // Handle title suggestion
@@ -100,7 +100,9 @@ fun ChatPanelWithPersistence(
         onSessionsChanged = { sessions = it }
     )
 
-    val categorizer = SessionCategorizer(scope, chatRepository, ollamaService, { selectedModel }) { sessions = chatRepository.getAllSessions() }
+    val categorizer = SessionCategorizer(scope, chatRepository, ollamaService, { selectedModel }) { 
+        scope.launch { sessions = chatRepository.getAllSessions() }
+    }
     val suggestionGen = SuggestionGenerator(scope, ollamaService, { selectedModel }, onAutoSuggestionsChange)
 
     // Use cases

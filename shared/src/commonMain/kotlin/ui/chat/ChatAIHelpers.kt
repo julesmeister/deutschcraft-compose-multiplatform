@@ -48,7 +48,13 @@ Respond with ONLY the category name (single word)."""
 
                 val category = ollamaService.chat(
                     messages = listOf(
-                        ui.ChatMessage(text = categorizePrompt, isUser = true, timestamp = System.currentTimeMillis())
+                        ChatMessage(
+                            id = 0,
+                            sessionId = 0,
+                            content = categorizePrompt,
+                            isUser = true,
+                            timestamp = kotlinx.datetime.Instant.fromEpochMilliseconds(System.currentTimeMillis())
+                        )
                     ),
                     systemContext = "You are a categorization assistant. Respond with only the category name.",
                     model = selectedModel()
@@ -79,15 +85,8 @@ class SuggestionGenerator(
     fun generateFollowUpSuggestions(messages: List<ChatMessage>) {
         scope.launch {
             try {
-                val uiMessagesForSuggestions = messages.map {
-                    ui.ChatMessage(
-                        text = it.content,
-                        isUser = it.isUser,
-                        timestamp = it.timestamp.toEpochMilliseconds()
-                    )
-                }
                 val followUpSuggestions = ollamaService.suggestUserResponses(
-                    messages = uiMessagesForSuggestions,
+                    messages = messages,
                     model = selectedModel()
                 )
                 onSuggestionsGenerated(followUpSuggestions)

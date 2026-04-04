@@ -1,5 +1,14 @@
 package ui.suggestions
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.*
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -7,6 +16,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -14,7 +29,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.settings.FontSize
 import theme.*
-import ui.components.m3.ShimmerEffect
+import ui.chat.debugConstraints
+import ui.suggestions.animations.StaggeredAnimatedContainer
+import ui.suggestions.animations.PulsingDots
+import ui.suggestions.animations.fadeTween
+import ui.suggestions.animations.TypewriterText
+import ui.suggestions.animations.BounceIn
+import ui.suggestions.animations.StaggeredFadeIn
+import ui.suggestions.animations.PulsingIcon
 
 @Composable
 internal fun AutoSuggestionsContent(
@@ -31,9 +53,6 @@ internal fun AutoSuggestionsContent(
     Card(
         colors = CardDefaults.cardColors(
             containerColor = Success.copy(alpha = 0.08f)
-        ),
-        border = CardDefaults.outlinedCardBorder().copy(
-            brush = androidx.compose.ui.graphics.SolidColor(Success.copy(alpha = 0.4f))
         ),
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -58,15 +77,19 @@ internal fun AutoSuggestionsContent(
             }
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Suggestions
-            suggestions.forEachIndexed { index, suggestion ->
+            // Suggestions with staggered animation
+            StaggeredAnimatedContainer(
+                itemCount = suggestions.size,
+                modifier = Modifier.fillMaxWidth()
+            ) { index, itemModifier ->
+                val suggestion = suggestions[index]
                 if (index > 0) {
                     Divider(color = Gray200, modifier = Modifier.padding(vertical = 8.dp))
                 }
 
                 OutlinedButton(
                     onClick = { onSuggestionClick(suggestion) },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = itemModifier.fillMaxWidth(),
                     colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = Gray800
                     ),
@@ -96,7 +119,7 @@ internal fun SuggestionsContent(
     suggestions: List<String>,
     fontSize: FontSize = FontSize.MEDIUM,
     onApply: () -> Unit,
-    onAppend: () -> Unit,
+    onAppend: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     // Convert FontSize enum to base sp value
@@ -108,42 +131,27 @@ internal fun SuggestionsContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .fillMaxHeight()  // FIX: Use fillMaxHeight for bounded constraints
             .verticalScroll(rememberScrollState())
+            .debugConstraints("SuggestionsContent Column")
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // Selected text card - compact
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = Gray50
-            ),
-            modifier = Modifier.fillMaxWidth()
+        // Results section with animated visibility
+        AnimatedVisibility(
+            visible = isGenerating || currentSuggestion.isNotEmpty() || suggestions.isNotEmpty(),
+            enter = expandVertically(
+                animationSpec = spring(stiffness = Spring.StiffnessMedium),
+                expandFrom = Alignment.Top
+            ) + fadeIn(animationSpec = fadeTween()),
+            exit = shrinkVertically(
+                animationSpec = tween(200),
+                shrinkTowards = Alignment.Top
+            ) + fadeOut(animationSpec = tween(200))
         ) {
-            Column(modifier = Modifier.padding(12.dp)) {
-                Text(
-                    text = if (isFullDocument) "FULL DOCUMENT" else "SELECTED TEXT",
-                    style = MaterialTheme.typography.labelSmall.copy(fontSize = (baseFontSize * 0.75).sp),
-                    color = Gray500
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = if (selectedText.length > 200) selectedText.take(200) + "..." else selectedText,
-                    style = MaterialTheme.typography.bodySmall.copy(fontSize = (baseFontSize * 0.875).sp),
-                    color = Gray700,
-                    maxLines = 4,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-        
-        // Results section
-        if (isGenerating || currentSuggestion.isNotEmpty() || suggestions.isNotEmpty()) {
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = Indigo.copy(alpha = 0.05f)
-                ),
-                border = CardDefaults.outlinedCardBorder().copy(
-                    brush = androidx.compose.ui.graphics.SolidColor(Indigo.copy(alpha = 0.3f))
                 ),
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -172,35 +180,55 @@ internal fun SuggestionsContent(
                         Spacer(modifier = Modifier.height(12.dp))
                     }
                     
-                    // Loading state
+                    // Loading state with pulsing dots
                     if (isGenerating && currentSuggestion.isEmpty() && suggestions.isEmpty()) {
-                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                            ShimmerEffect(height = 16.dp, widthFraction = 0.9f)
-                            ShimmerEffect(height = 16.dp, widthFraction = 0.7f)
-                            ShimmerEffect(height = 16.dp, widthFraction = 0.8f)
+                        Box(
+                            modifier = Modifier.fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            PulsingDots(
+                                dotCount = 3,
+                                dotSize = 8.dp,
+                                color = Indigo
+                            )
                         }
                     }
                     
-                    // Single suggestion result
+                    // Single suggestion result with typewriter effect
                     if (currentSuggestion.isNotEmpty()) {
-                        Text(
+                        TypewriterText(
                             text = currentSuggestion,
                             style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
-                            color = Gray800,
-                            lineHeight = (baseFontSize * 1.5).sp,
+                            typingDelayMs = 8,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                         
                         Spacer(modifier = Modifier.height(12.dp))
                         
-                        // Action buttons for single suggestion
+                        // Action buttons for single suggestion with bounce
                         Row(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier.fillMaxWidth()
                         ) {
+                            var applyButtonVisible by remember { mutableStateOf(false) }
+                            LaunchedEffect(currentSuggestion) {
+                                applyButtonVisible = false
+                                kotlinx.coroutines.delay(400)
+                                applyButtonVisible = true
+                            }
+                            val applyButtonScale by animateFloatAsState(
+                                targetValue = if (applyButtonVisible) 1f else 0.8f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioHighBouncy,
+                                    stiffness = Spring.StiffnessMedium
+                                ),
+                                label = "apply_bounce"
+                            )
                             Button(
                                 onClick = onApply,
-                                modifier = Modifier.weight(1f),
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .graphicsLayer { scaleX = applyButtonScale; scaleY = applyButtonScale },
                                 colors = ButtonDefaults.buttonColors(
                                     containerColor = Indigo
                                 )
@@ -212,35 +240,57 @@ internal fun SuggestionsContent(
                         }
                     }
                     
-                    // Multiple suggestions (for "suggest more")
+                    // Multiple suggestions (for "suggest more") with staggered fade-in
                     if (suggestions.isNotEmpty()) {
-                        suggestions.forEachIndexed { index, suggestion ->
+                        StaggeredFadeIn(
+                            itemCount = suggestions.size,
+                            staggerDelayMs = 60
+                        ) { index, itemModifier ->
+                            val suggestion = suggestions[index]
                             if (index > 0) {
                                 Divider(color = Gray200, modifier = Modifier.padding(vertical = 8.dp))
                             }
                             
-                            Text(
-                                text = "${index + 1}. $suggestion",
-                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
-                                color = Gray800,
-                                lineHeight = (baseFontSize * 1.5).sp,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
-                            
-                            Row(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
-                            ) {
-                                Button(
-                                    onClick = onAppend,
-                                    modifier = Modifier.weight(1f),
-                                    colors = ButtonDefaults.buttonColors(
-                                        containerColor = Indigo
-                                    )
+                            Column(modifier = itemModifier.fillMaxWidth()) {
+                                Text(
+                                    text = "${index + 1}. $suggestion",
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
+                                    color = Gray800,
+                                    lineHeight = (baseFontSize * 1.5).sp,
+                                    modifier = Modifier.padding(vertical = 4.dp)
+                                )
+                                
+                                Row(
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp)
                                 ) {
-                                    Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                    Text("Use This")
+                                    var useButtonVisible by remember(index) { mutableStateOf(false) }
+                                    LaunchedEffect(index) {
+                                        useButtonVisible = false
+                                        kotlinx.coroutines.delay(200 + index * 100L)
+                                        useButtonVisible = true
+                                    }
+                                    val useButtonScale by animateFloatAsState(
+                                        targetValue = if (useButtonVisible) 1f else 0.8f,
+                                        animationSpec = spring(
+                                            dampingRatio = Spring.DampingRatioMediumBouncy,
+                                            stiffness = Spring.StiffnessMedium
+                                        ),
+                                        label = "use_bounce_$index"
+                                    )
+                                    Button(
+                                        onClick = { onAppend(suggestion) },
+                                        modifier = Modifier
+                                            .weight(1f)
+                                            .graphicsLayer { scaleX = useButtonScale; scaleY = useButtonScale },
+                                        colors = ButtonDefaults.buttonColors(
+                                            containerColor = Indigo
+                                        )
+                                    ) {
+                                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text("Use This")
+                                    }
                                 }
                             }
                         }
@@ -260,8 +310,14 @@ internal fun SuggestionsContent(
             }
         }
         
-        // Hint when no results yet
-        if (!isGenerating && currentSuggestion.isEmpty() && suggestions.isEmpty()) {
+        // Hint when no results yet - with animated entrance
+        AnimatedVisibility(
+            visible = !isGenerating && currentSuggestion.isEmpty() && suggestions.isEmpty(),
+            enter = fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                    slideInVertically(animationSpec = spring(stiffness = Spring.StiffnessMedium)) { it / 3 },
+            exit = fadeOut(animationSpec = tween(200)) + 
+                   slideOutVertically(animationSpec = tween(200)) { it / 3 }
+        ) {
             Card(
                 colors = CardDefaults.cardColors(
                     containerColor = Gray50
@@ -273,12 +329,14 @@ internal fun SuggestionsContent(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Info,
-                        contentDescription = null,
-                        tint = Gray400,
-                        modifier = Modifier.size(24.dp)
-                    )
+                    PulsingIcon(modifier = Modifier.size(24.dp)) { mod ->
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Gray400,
+                            modifier = mod
+                        )
+                    }
                     Text(
                         text = "Choose an action below to get AI assistance for your selected text.",
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = (baseFontSize * 0.875).sp),

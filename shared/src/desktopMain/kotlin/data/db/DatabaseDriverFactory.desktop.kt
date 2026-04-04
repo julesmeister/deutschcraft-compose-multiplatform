@@ -3,7 +3,9 @@ package data.db
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.jdbc.sqlite.JdbcSqliteDriver
 import data.repository.ChatRepository
+import data.repository.EssayRepository
 import data.repository.SqlDelightChatRepository
+import data.repository.SqlDelightEssayRepository
 import data.settings.DesktopSettingsRepository
 import data.settings.SettingsRepository
 import java.io.File
@@ -11,6 +13,7 @@ import java.io.File
 actual class DatabaseDriverFactory {
     actual val databaseManager: DatabaseManager by lazy { DatabaseManager(this) }
     actual val chatRepository: ChatRepository by lazy { SqlDelightChatRepository(createDriver()) }
+    actual val essayRepository: EssayRepository by lazy { SqlDelightEssayRepository(createDriver()) }
     actual val settingsRepository: SettingsRepository by lazy { DesktopSettingsRepository() }
     
     actual fun createDriver(): SqlDriver {

@@ -13,7 +13,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Spellcheck
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,9 +35,12 @@ import theme.Indigo
 @Composable
 fun EditorToolbar(
     text: String,
+    currentEssayTitle: String? = null,
     onAnalyzeClick: () -> Unit,
     onClearClick: () -> Unit,
-    onRefreshClick: () -> Unit
+    onRefreshClick: () -> Unit,
+    onOpenClick: () -> Unit,
+    onSaveClick: () -> Unit
 ) {
     Surface(
         tonalElevation = 0.dp,
@@ -49,18 +54,79 @@ fun EditorToolbar(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Left side - Title only
-            Text(
-                text = "Editor",
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
-            )
+            // Left side - Title with essay name if saved
+            Column {
+                Text(
+                    text = "Editor",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                )
+                if (!currentEssayTitle.isNullOrBlank()) {
+                    Text(
+                        text = currentEssayTitle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = Indigo
+                    )
+                }
+            }
             
             // Right side - Action buttons
             Row(
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                // Open button
+                val openInteractionSource = remember { MutableInteractionSource() }
+                val isOpenHovered by openInteractionSource.collectIsHoveredAsState()
+
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(if (isOpenHovered) Indigo.copy(alpha = 0.1f) else Color.Transparent)
+                        .hoverable(openInteractionSource)
+                        .clickable { onOpenClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.FolderOpen,
+                        contentDescription = "Open essay",
+                        tint = if (isOpenHovered) Indigo else Gray400,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .graphicsLayer {
+                                scaleX = if (isOpenHovered) 1.15f else 1f
+                                scaleY = if (isOpenHovered) 1.15f else 1f
+                            }
+                    )
+                }
+
+                // Save button
+                val saveInteractionSource = remember { MutableInteractionSource() }
+                val isSaveHovered by saveInteractionSource.collectIsHoveredAsState()
+
+                Box(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape)
+                        .background(if (isSaveHovered) Color(0xFFDBEAFE) else Color.Transparent)
+                        .hoverable(saveInteractionSource)
+                        .clickable(enabled = text.isNotBlank()) { onSaveClick() },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.Save,
+                        contentDescription = "Save essay",
+                        tint = if (text.isNotBlank()) (if (isSaveHovered) Color(0xFF2563EB) else Gray600) else Gray300,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .graphicsLayer {
+                                scaleX = if (isSaveHovered) 1.15f else 1f
+                                scaleY = if (isSaveHovered) 1.15f else 1f
+                            }
+                    )
+                }
+
                 // Analyze button
                 val analyzeInteractionSource = remember { MutableInteractionSource() }
                 val isAnalyzeHovered by analyzeInteractionSource.collectIsHoveredAsState()

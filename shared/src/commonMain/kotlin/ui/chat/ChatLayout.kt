@@ -4,25 +4,21 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import ui.chat.ConnectionStatusBanner
-import ui.chat.ChatHeader
-import ui.chat.ChatInputArea
-import ui.chat.PersistentChatBubble
-import ui.chat.EmptyChatState
+import ui.ConnectionStatusBanner
+import ui.SessionSidebar
+import ui.ChatHeader
+import ui.ChatInputArea
 import ui.components.m3.DCConfirmDialog
 import data.repository.ChatMessage
 import data.repository.ChatSession
 import data.settings.FontSize
-import theme.Gray500
-import theme.Indigo
-import ui.chat.SessionSidebar
+
+// DEBUG: Import constraint debugging
+import ui.chat.debugConstraints
 
 @Composable
 internal fun ChatLayout(
@@ -54,7 +50,14 @@ internal fun ChatLayout(
     fontSize: FontSize,
     modifier: Modifier = Modifier
 ) {
-    Row(modifier = modifier.fillMaxSize()) {
+    // ═════════════════════════════════════════════════════════════════════════════
+    // SECTION: Root Layout - Row with Sidebar + Main Chat Area
+    // DEBUG: Log layout constraints for debugging infinite height issues
+    // ═════════════════════════════════════════════════════════════════════════════
+    val debugLayout = remember { false } // DEBUG DISABLED
+    if (debugLayout) println("[ChatLayout] Rendering with modifier: $modifier")
+    
+    Row(modifier = modifier.fillMaxSize().debugConstraints("ChatLayout Row")) {
         // Session List Sidebar
         AnimatedVisibility(
             visible = showSessionList,
@@ -125,26 +128,42 @@ private fun ChatMainArea(
     onShowDeleteConfirmation: (Long, String) -> Unit,
     fontSize: FontSize
 ) {
+    // ═════════════════════════════════════════════════════════════════════════════
+    // SECTION: ChatMainArea - Header + Messages List + Input Area
+    // CRITICAL: Must use fillMaxSize() not fillMaxHeight() to avoid infinite constraints
+    // DEBUG: Log when constraints might be unbounded
+    // ═════════════════════════════════════════════════════════════════════════════
+    val debugLayout = remember { false } // DEBUG DISABLED
+    if (debugLayout) println("[ChatMainArea] Creating Column with fillMaxSize")
+    
     Column(
-        modifier = Modifier.weight(1f).fillMaxHeight()
+        modifier = Modifier.fillMaxSize().debugConstraints("ChatMainArea Column")
     ) {
-        // Chat header with toggle
+        // ─────────────────────────────────────────────────────────────────────────────
+        // SUBSECTION: Header with session title and toggle controls
+        // ─────────────────────────────────────────────────────────────────────────────
         ChatHeader(
             sessionTitle = sessions.find { it.id == currentSessionId }?.title ?: "Chat",
             showSessionList = showSessionList,
             onToggleSidebar = onToggleSidebar,
             onNewChat = onNewChat,
-            connectionStatus = "Connected", // Simplified
+            connectionStatus = if (isGenerating) "AI typing..." else "Connected",
+            isGenerating = isGenerating,
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Connection status banner
+        // ─────────────────────────────────────────────────────────────────────────────
+        // SUBSECTION: Connection status indicator banner
+        // ─────────────────────────────────────────────────────────────────────────────
         ConnectionStatusBanner(
             connectionStatus = "Connected",
             isGenerating = isGenerating
         )
 
-        // Chat messages
+        // ─────────────────────────────────────────────────────────────────────────────
+        // SUBSECTION: Chat Messages List (LazyColumn with weight)
+        // CRITICAL: Uses weight(1f) to take remaining space, not fillMaxSize()
+        // ─────────────────────────────────────────────────────────────────────────────
         ChatMessagesList(
             messages = messages,
             isGenerating = isGenerating,
@@ -152,10 +171,13 @@ private fun ChatMainArea(
             onRegenerateMessage = onRegenerateMessage,
             onTextSelected = onTextSelected,
             onShowDeleteConfirmation = onShowDeleteConfirmation,
-            fontSize = fontSize
+            fontSize = fontSize,
+            modifier = Modifier.fillMaxWidth().weight(1f)
         )
 
-        // Input area
+        // ─────────────────────────────────────────────────────────────────────────────
+        // SUBSECTION: Message Input Area at bottom
+        // ─────────────────────────────────────────────────────────────────────────────
         ChatInputArea(
             value = inputText,
             onValueChange = onInputChange,
@@ -165,61 +187,5 @@ private fun ChatMainArea(
             fontSize = fontSize,
             modifier = Modifier.fillMaxWidth()
         )
-    }
-}
-
-@Composable
-private fun ChatMessagesList(
-    messages: List<ChatMessage>,
-    isGenerating: Boolean,
-    onDeleteMessage: (Long) -> Unit,
-    onRegenerateMessage: (Long) -> Unit,
-    onTextSelected: (String) -> Unit,
-    onShowDeleteConfirmation: (Long, String) -> Unit,
-    fontSize: FontSize
-) {
-    Box(
-        modifier = Modifier.weight(1f).fillMaxWidth()
-    ) {
-        if (messages.isEmpty()) {
-            EmptyChatState(modifier = Modifier.align(Alignment.Center))
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(messages, key = { it.id }) { message ->
-                    PersistentChatBubble(
-                        message = message,
-                        fontSize = fontSize,
-                        onDelete = { id -> onDeleteMessage(id) },
-                        onRegenerate = { id -> onRegenerateMessage(id) },
-                        onTextSelected = onTextSelected,
-                        showDeleteConfirm = { id, msg -> onShowDeleteConfirmation(id, msg) },
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
-                if (isGenerating) {
-                    item {
-                        Row(
-                            modifier = Modifier.padding(top = 8.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            CircularProgressIndicator(
-                                modifier = Modifier.size(16.dp),
-                                strokeWidth = 2.dp,
-                                color = Indigo
-                            )
-                            Text(
-                                text = "AI is typing...",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = Gray500
-                            )
-                        }
-                    }
-                }
-            }
-        }
     }
 }

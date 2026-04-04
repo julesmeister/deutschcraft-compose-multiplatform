@@ -1,6 +1,12 @@
 package ui.data
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.Chat
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -94,7 +100,7 @@ fun DataManagementPanel(
                 CleanupSection(
                     title = "Study Entries",
                     description = "Delete practice entries older than selected time period",
-                    icon = androidx.compose.material.icons.Icons.Default.Edit,
+                    icon = Icons.Filled.Edit,
                     onClearLastWeek = {
                         showConfirmDialog = ConfirmAction.ENTRIES_LAST_WEEK
                     },
@@ -112,7 +118,7 @@ fun DataManagementPanel(
                 CleanupSection(
                     title = "Chat History",
                     description = "Delete old chat sessions and messages",
-                    icon = androidx.compose.material.icons.Icons.Default.Chat,
+                    icon = Icons.Filled.Chat,
                     onClearLastWeek = {
                         showConfirmDialog = ConfirmAction.CHAT_LAST_WEEK
                     },
@@ -130,7 +136,7 @@ fun DataManagementPanel(
                 CleanupSection(
                     title = "Vocabulary",
                     description = "Manage learned words and clear vocabulary data",
-                    icon = androidx.compose.material.icons.Icons.Default.Book,
+                    icon = Icons.Filled.Book,
                     onClearLearned = {
                         showConfirmDialog = ConfirmAction.VOCAB_LEARNED
                     },
@@ -148,7 +154,7 @@ fun DataManagementPanel(
                 CleanupSection(
                     title = "Grammar Mistakes",
                     description = "Clear recorded grammar mistakes and corrections",
-                    icon = androidx.compose.material.icons.Icons.Default.Warning,
+                    icon = Icons.Filled.Warning,
                     onClearLastWeek = {
                         showConfirmDialog = ConfirmAction.MISTAKES_LAST_WEEK
                     },
@@ -176,7 +182,7 @@ fun DataManagementPanel(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     Icon(
-                        imageVector = androidx.compose.material.icons.Icons.Default.CheckCircle,
+                        imageVector = Icons.Filled.CheckCircle,
                         contentDescription = null,
                         tint = Success,
                         modifier = Modifier.size(24.dp)

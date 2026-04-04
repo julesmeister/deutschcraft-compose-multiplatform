@@ -24,6 +24,7 @@ internal fun ChatHeader(
     onToggleSidebar: () -> Unit,
     onNewChat: () -> Unit,
     connectionStatus: String,
+    isGenerating: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -67,14 +68,23 @@ internal fun ChatHeader(
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    // Connection indicator
-                    val connectionColor = if (connectionStatus == "Connected") Color(0xFF4CAF50) else Color(0xFFFF9800)
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(connectionColor)
-                    )
+                    // Connection/Generating indicator
+                    if (isGenerating) {
+                        // Animated loading indicator
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(12.dp),
+                            strokeWidth = 2.dp,
+                            color = Indigo
+                        )
+                    } else {
+                        val connectionColor = if (connectionStatus == "Connected") Color(0xFF4CAF50) else Color(0xFFFF9800)
+                        Box(
+                            modifier = Modifier
+                                .size(8.dp)
+                                .clip(CircleShape)
+                                .background(connectionColor)
+                        )
+                    }
                     Text(
                         text = connectionStatus,
                         style = MaterialTheme.typography.labelSmall,

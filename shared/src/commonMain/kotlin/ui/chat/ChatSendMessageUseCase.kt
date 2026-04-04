@@ -7,7 +7,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import service.OllamaService
-import ui.ChatMessage as UiChatMessage
 
 class ChatSendMessageUseCase(
     private val scope: CoroutineScope,
@@ -45,16 +44,8 @@ class ChatSendMessageUseCase(
                 try {
                     // Get fresh messages from DB for context
                     val sessionMessages = chatRepository.getMessagesForSession(sessionId)
-                    val uiMessages = sessionMessages.map {
-                        UiChatMessage(
-                            text = it.content,
-                            isUser = it.isUser,
-                            timestamp = it.timestamp.toEpochMilliseconds()
-                        )
-                    }
-
                     val response = ollamaService.chat(
-                        messages = uiMessages,
+                        messages = sessionMessages,
                         systemContext = systemContext(),
                         model = selectedModel()
                     )
@@ -91,15 +82,8 @@ class ChatSendMessageUseCase(
     private fun generateFollowUpSuggestions(messages: List<ChatMessage>) {
         scope.launch {
             try {
-                val uiMessagesForSuggestions = messages.map {
-                    UiChatMessage(
-                        text = it.content,
-                        isUser = it.isUser,
-                        timestamp = it.timestamp.toEpochMilliseconds()
-                    )
-                }
                 val followUpSuggestions = ollamaService.suggestUserResponses(
-                    messages = uiMessagesForSuggestions,
+                    messages = messages,
                     model = selectedModel()
                 )
                 onAutoSuggestionsChange(followUpSuggestions)
