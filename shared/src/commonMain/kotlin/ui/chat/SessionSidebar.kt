@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChatBubble
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,24 +20,35 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import data.repository.ChatSession
 import theme.*
+import ui.chat.ConnectionStatusBanner
+import ui.chat.CategoryPickerDialog
 
 @Composable
 internal fun SessionSidebar(
     sessions: List<ChatSession>,
     currentSessionId: Long?,
+    categories: List<String>,
+    selectedCategory: String?,
     onSessionClick: (Long) -> Unit,
     onNewSessionClick: () -> Unit,
     onDeleteSession: (Long) -> Unit,
+    onCategorySelected: (String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    var showCategoryDialog by remember { mutableStateOf(false) }
     Surface(
         color = Gray50,
-        modifier = modifier.fillMaxHeight()
+        shape = RoundedCornerShape(12.dp),
+        border = BorderStroke(1.dp, Gray200),
+        modifier = modifier
+            .fillMaxHeight()
+            .padding(8.dp)
     ) {
         Column(modifier = Modifier.fillMaxSize()) {
             // Header
@@ -52,20 +64,50 @@ internal fun SessionSidebar(
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                 )
-                IconButton(
-                    onClick = onNewSessionClick,
-                    modifier = Modifier.size(32.dp)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "New chat",
-                        tint = Indigo,
-                        modifier = Modifier.size(20.dp)
-                    )
+                    // Filter button
+                    IconButton(
+                        onClick = { showCategoryDialog = true },
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.FilterList,
+                            contentDescription = "Filter by category",
+                            tint = if (selectedCategory != null) Indigo else Gray500,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(
+                        onClick = onNewSessionClick,
+                        modifier = Modifier.size(32.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "New chat",
+                            tint = Indigo,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
             Divider(color = Gray200)
+
+            // Category Dialog
+            if (showCategoryDialog) {
+                CategoryPickerDialog(
+                    categories = categories,
+                    selectedCategory = selectedCategory,
+                    onCategorySelected = { category ->
+                        onCategorySelected(category)
+                        showCategoryDialog = false
+                    },
+                    onDismiss = { showCategoryDialog = false }
+                )
+            }
 
             // Session list
             LazyColumn(

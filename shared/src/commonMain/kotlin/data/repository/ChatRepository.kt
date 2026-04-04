@@ -13,5 +13,13 @@ interface ChatRepository {
     suspend fun updateMessage(messageId: Long, content: String)
     suspend fun deleteSession(sessionId: Long)
     suspend fun updateSessionTitle(sessionId: Long, title: String)
+    suspend fun updateSessionCategory(sessionId: Long, category: String?)
+    suspend fun getSessionsByCategory(category: String): List<ChatSession>
+    suspend fun getAllCategories(): List<String>
     suspend fun getOrCreateDefaultSession(): Long
+    
+    // Data cleanup methods
+    suspend fun deleteSessionsBeforeDate(timestamp: Long): Long
+    suspend fun deleteMessagesBeforeDate(timestamp: Long): Long
+    suspend fun getStorageStats(): Triple<Long, Long, Long>
 }

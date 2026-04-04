@@ -1,6 +1,7 @@
 CREATE TABLE chatSession (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT,
+    category TEXT,
     created_at INTEGER NOT NULL,
     updated_at INTEGER NOT NULL
 );
@@ -14,14 +15,25 @@ SELECT * FROM chatSession
 WHERE id = :id;
 
 insertSession:
-INSERT INTO chatSession(title, created_at, updated_at)
-VALUES (:title, :created_at, :updated_at);
+INSERT INTO chatSession(title, category, created_at, updated_at)
+VALUES (:title, :category, :created_at, :updated_at);
 
 updateSession:
 UPDATE chatSession
 SET updated_at = :updated_at,
-    title = :title
+    title = :title,
+    category = :category
 WHERE id = :id;
+
+selectSessionsByCategory:
+SELECT * FROM chatSession
+WHERE category = :category
+ORDER BY updated_at DESC;
+
+selectAllCategories:
+SELECT DISTINCT category FROM chatSession
+WHERE category IS NOT NULL
+ORDER BY category;
 
 deleteSession:
 DELETE FROM chatSession

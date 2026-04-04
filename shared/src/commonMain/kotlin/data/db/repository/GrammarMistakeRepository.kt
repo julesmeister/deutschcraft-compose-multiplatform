@@ -121,11 +121,9 @@ class GrammarMistakeRepository(driver: SqlDriver) {
     }
 
     fun getStorageStats(): Triple<Long, Long, Long> {
-        val stats = queries.getStorageStats().executeAsOne()
-        return Triple(
-            stats.mistake_count ?: 0L,
-            stats.recurring_count ?: 0L,
-            stats.unique_types ?: 0L
-        )
+        val total = queries.getMistakeCount().executeAsOne() ?: 0L
+        val recurring = queries.getRecurringMistakeCount().executeAsOne() ?: 0L
+        val uniqueTypes = queries.getUniqueErrorTypeCount().executeAsOne() ?: 0L
+        return Triple(total, recurring, uniqueTypes)
     }
 }

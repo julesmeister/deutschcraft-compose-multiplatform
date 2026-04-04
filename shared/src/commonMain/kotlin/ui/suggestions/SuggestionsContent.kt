@@ -17,6 +17,76 @@ import theme.*
 import ui.components.m3.ShimmerEffect
 
 @Composable
+internal fun AutoSuggestionsContent(
+    suggestions: List<String>,
+    fontSize: FontSize = FontSize.MEDIUM,
+    onSuggestionClick: (String) -> Unit,
+) {
+    val baseFontSize = when (fontSize) {
+        FontSize.SMALL -> 14f
+        FontSize.MEDIUM -> 16f
+        FontSize.LARGE -> 20f
+    }
+
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = Success.copy(alpha = 0.08f)
+        ),
+        border = CardDefaults.outlinedCardBorder().copy(
+            brush = androidx.compose.ui.graphics.SolidColor(Success.copy(alpha = 0.4f))
+        ),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            // Header
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Icon(
+                    Icons.Default.Lightbulb,
+                    contentDescription = null,
+                    tint = Success,
+                    modifier = Modifier.size(18.dp)
+                )
+                Text(
+                    text = "Suggested Replies",
+                    style = MaterialTheme.typography.labelMedium.copy(fontSize = (baseFontSize * 0.875).sp),
+                    color = Success,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
+                )
+            }
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Suggestions
+            suggestions.forEachIndexed { index, suggestion ->
+                if (index > 0) {
+                    Divider(color = Gray200, modifier = Modifier.padding(vertical = 8.dp))
+                }
+
+                OutlinedButton(
+                    onClick = { onSuggestionClick(suggestion) },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Gray800
+                    ),
+                    border = ButtonDefaults.outlinedButtonBorder.copy(
+                        brush = androidx.compose.ui.graphics.SolidColor(Gray300)
+                    )
+                ) {
+                    Text(
+                        text = suggestion,
+                        style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = androidx.compose.ui.text.style.TextAlign.Start
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 internal fun SuggestionsContent(
     selectedText: String,
     isFullDocument: Boolean = false,

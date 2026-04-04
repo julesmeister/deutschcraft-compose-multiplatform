@@ -5,6 +5,7 @@ import kotlinx.datetime.Instant
 data class ChatSession(
     val id: Long,
     val title: String?,
+    val category: String?,
     val createdAt: Instant,
     val updatedAt: Instant
 )

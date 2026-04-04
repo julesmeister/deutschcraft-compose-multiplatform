@@ -41,6 +41,7 @@ import ui.settings.SettingsToggleRow
 import ui.settings.ThemeSelector
 import ui.settings.FontSizeSelector
 import ui.settings.ModelSelector
+import ui.settings.DailyGoalSelector
 import ui.data.DataManagementPanel
 
 @Composable

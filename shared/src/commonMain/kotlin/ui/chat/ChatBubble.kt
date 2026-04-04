@@ -9,6 +9,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Card
@@ -18,6 +20,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -38,8 +41,6 @@ import ui.ChatMessage
 @Composable
 fun ChatBubble(
     message: ChatMessage,
-    onEdit: (Long, String) -> Unit = { _, _ -> },
-    onDelete: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val isUser = message.isUser
@@ -50,15 +51,12 @@ fun ChatBubble(
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
     
-    var isEditing by remember { mutableStateOf(false) }
-    var editText by remember { mutableStateOf(message.content) }
-    
     Row(
         modifier = modifier,
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start,
         verticalAlignment = Alignment.Bottom
     ) {
-        // AI avatar (left side) - circular, aligned to bottom
+        // AI avatar (left side)
         if (!isUser) {
             Box(
                 modifier = Modifier
@@ -72,6 +70,24 @@ fun ChatBubble(
                     contentDescription = "AI",
                     tint = Indigo,
                     modifier = Modifier.size(22.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(4.dp))
+        }
+        
+        // Copy button (for user messages, on left side of bubble)
+        if (isHovered && isUser) {
+            IconButton(
+                onClick = {
+                    clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.text))
+                },
+                modifier = Modifier.size(24.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.ContentCopy,
+                    contentDescription = "Copy",
+                    tint = Gray600,
+                    modifier = Modifier.size(16.dp)
                 )
             }
             Spacer(modifier = Modifier.width(4.dp))
@@ -93,95 +109,36 @@ fun ChatBubble(
                     bottomEnd = if (isUser) 4.dp else 18.dp
                 )
             ) {
-                if (isEditing) {
-                    BasicTextField(
-                        value = editText,
-                        onValueChange = { editText = it },
-                        modifier = Modifier.padding(14.dp),
-                        singleLine = true
-                    )
-                } else {
-                    Text(
-                        text = message.text,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = textColor,
-                        modifier = Modifier.padding(14.dp)
-                    )
-                }
+                Text(
+                    text = message.text,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = textColor,
+                    modifier = Modifier.padding(14.dp)
+                )
             }
             
-            // Action buttons - appears on hover (only when not editing)
-            if (isHovered && !isEditing) {
-                Row(
+            // Copy button (for AI messages, on right side of bubble)
+            if (isHovered && !isUser) {
+                IconButton(
+                    onClick = {
+                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.text))
+                    },
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = (-8).dp, y = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        .offset(x = (-8).dp, y = 4.dp)
+                        .size(24.dp)
                 ) {
-                    // Edit button (only for user messages)
-                    if (isUser) {
-                        IconButton(
-                            onClick = { isEditing = true },
-                            modifier = Modifier.size(24.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit",
-                                tint = if (isUser) Color.White.copy(alpha = 0.8f) else Gray600,
-                                modifier = Modifier.size(16.dp)
-                            )
-                        }
-                    }
-                    
-                    // Copy button
-                    IconButton(
-                        onClick = {
-                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.content))
-                        },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copy",
-                            tint = if (isUser) Color.White.copy(alpha = 0.8f) else Gray600,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                    
-                    // Delete button
-                    IconButton(
-                        onClick = { onDelete(message.id) },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = if (isUser) Color.White.copy(alpha = 0.8f) else Gray600,
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            } else if (isEditing) {
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .offset(x = (-8).dp, y = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    TextButton(onClick = {
-                        onEdit(message.id, editText)
-                        isEditing = false
-                    }) {
-                        Text("Save")
-                    }
-                    TextButton(onClick = { isEditing = false }) {
-                        Text("Cancel")
-                    }
+                    Icon(
+                        imageVector = Icons.Default.ContentCopy,
+                        contentDescription = "Copy",
+                        tint = Gray600,
+                        modifier = Modifier.size(16.dp)
+                    )
                 }
             }
         }
         
-        // User avatar (right side) - circular, aligned to bottom
+        // User avatar (right side)
         if (isUser) {
             Spacer(modifier = Modifier.width(4.dp))
             Box(

@@ -51,3 +51,7 @@ WHERE timestamp < :before_timestamp;
 countMessagesBeforeDate:
 SELECT COUNT(*) FROM chatMessage
 WHERE timestamp < :before_timestamp;
+
+deleteOrphanedMessages:
+DELETE FROM chatMessage
+WHERE session_id NOT IN (SELECT id FROM chatSession);

@@ -77,6 +77,7 @@ data class ChatSessionEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val title: String? = null,
+    val category: String? = null,
     val createdAt: Instant,
     val updatedAt: Instant
 )

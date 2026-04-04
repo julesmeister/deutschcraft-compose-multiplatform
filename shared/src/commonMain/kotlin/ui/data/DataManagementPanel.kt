@@ -421,10 +421,10 @@ private suspend fun refreshStats(
     val vocabStats = databaseManager.vocabulary.getStats()
     val mistakesStats = databaseManager.mistakes.getStats()
     
-    // Get chat stats from repository if available
-    val chatStats = (chatRepository as? data.repository.SqlDelightChatRepository)?.getStorageStats()
-    val chatSessions = chatStats?.first ?: 0L
-    val chatMessages = chatStats?.second ?: 0L
+    // Get chat stats from repository
+    val chatStats = chatRepository.getStorageStats()
+    val chatSessions = chatStats.first
+    val chatMessages = chatStats.second
     
     onStats(
         DataStats(
@@ -462,18 +462,15 @@ private suspend fun executeCleanup(
             "Deleted all $count study entries"
         }
         ConfirmAction.CHAT_LAST_WEEK -> {
-            val count = (chatRepository as? data.repository.SqlDelightChatRepository)
-                ?.deleteSessionsBeforeDate(oneWeekAgo) ?: 0L
+            val count = chatRepository.deleteSessionsBeforeDate(oneWeekAgo)
             "Deleted $count chat sessions from last week"
         }
         ConfirmAction.CHAT_LAST_MONTH -> {
-            val count = (chatRepository as? data.repository.SqlDelightChatRepository)
-                ?.deleteSessionsBeforeDate(oneMonthAgo) ?: 0L
+            val count = chatRepository.deleteSessionsBeforeDate(oneMonthAgo)
             "Deleted $count chat sessions from last month"
         }
         ConfirmAction.CHAT_ALL -> {
-            val count = (chatRepository as? data.repository.SqlDelightChatRepository)
-                ?.deleteSessionsBeforeDate(now + 1) ?: 0L
+            val count = chatRepository.deleteSessionsBeforeDate(now + 1)
             "Deleted all $count chat sessions"
         }
         ConfirmAction.VOCAB_LEARNED -> {

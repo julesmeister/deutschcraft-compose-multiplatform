@@ -71,8 +71,11 @@ countMistakesBeforeDate:
 SELECT COUNT(*) FROM grammarMistake
 WHERE timestamp < :before_timestamp;
 
-getStorageStats:
-SELECT 
-    (SELECT COUNT(*) FROM grammarMistake) as mistake_count,
-    (SELECT COUNT(*) FROM grammarMistake WHERE recurrence_count > 1) as recurring_count,
-    (SELECT COUNT(DISTINCT error_type) FROM grammarMistake) as unique_types;
+getMistakeCount:
+SELECT COUNT(*) FROM grammarMistake;
+
+getRecurringMistakeCount:
+SELECT COUNT(*) FROM grammarMistake WHERE recurrence_count > 1;
+
+getUniqueErrorTypeCount:
+SELECT COUNT(DISTINCT error_type) FROM grammarMistake;

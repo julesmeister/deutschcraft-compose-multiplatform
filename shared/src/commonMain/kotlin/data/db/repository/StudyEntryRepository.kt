@@ -97,6 +97,7 @@ class StudyEntryRepository(driver: SqlDriver) {
     }
 
     fun getOldestEntryDate(): Long? {
-        return queries.getOldestEntryDate().executeAsOne()
+        val result = queries.getOldestEntryDate().executeAsOne()
+        return result.MIN
     }
 }

@@ -142,8 +142,14 @@ interface ChatSessionDao {
     @Query("SELECT * FROM chat_sessions WHERE id = :id")
     suspend fun getSessionById(id: Long): ChatSessionEntity?
 
-    @Query("UPDATE chat_sessions SET updatedAt = :updatedAt, title = :title WHERE id = :id")
-    suspend fun updateSession(id: Long, updatedAt: Instant, title: String?)
+    @Query("UPDATE chat_sessions SET updatedAt = :updatedAt, title = :title, category = :category WHERE id = :id")
+    suspend fun updateSession(id: Long, updatedAt: Instant, title: String?, category: String?)
+
+    @Query("SELECT * FROM chat_sessions WHERE category = :category ORDER BY updatedAt DESC")
+    suspend fun getSessionsByCategory(category: String): List<ChatSessionEntity>
+
+    @Query("SELECT DISTINCT category FROM chat_sessions WHERE category IS NOT NULL ORDER BY category")
+    suspend fun getAllCategories(): List<String?>
 
     @Delete
     suspend fun delete(session: ChatSessionEntity)

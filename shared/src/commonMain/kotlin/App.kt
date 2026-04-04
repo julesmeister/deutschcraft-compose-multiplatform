@@ -28,10 +28,11 @@ import theme.Gray600
 import theme.Gray700
 import theme.Indigo
 import ui.EditorPanel
-import ui.ChatPanelWithPersistence
+import ui.chat.ChatPanelWithPersistence
 import ui.GrammarAnalysisPanel
 import ui.SettingsPanel
 import ui.suggestions.SuggestionsPanel
+import ui.suggestions.SuggestionsPanelMode
 import kotlinx.coroutines.*
 
 @Composable
@@ -60,6 +61,10 @@ fun App(driverFactory: DatabaseDriverFactory) {
         var selectedText by remember { mutableStateOf("") }
         var activeTab by remember { mutableStateOf(0) } // 0 = Editor, 1 = Chat, 2 = Analysis, 3 = Settings
         var showRightPanel by remember { mutableStateOf(true) }
+        var chatSelectedText by remember { mutableStateOf("") }
+        var chatMessages by remember { mutableStateOf(listOf<ui.ChatMessage>()) }
+        var chatTitleSuggestion by remember { mutableStateOf<String?>(null) }
+        var chatAutoSuggestions by remember { mutableStateOf(listOf<String>()) }
         var suggestionError by remember { mutableStateOf<String?>(null) }
         
         Scaffold { paddingValues ->
@@ -98,6 +103,11 @@ fun App(driverFactory: DatabaseDriverFactory) {
                             editorText = editorText,
                             driverFactory = driverFactory,
                             fontSize = fontSize,
+                            onSelectionChange = { chatSelectedText = it },
+                            onMessagesChange = { chatMessages = it },
+                            onAutoSuggestionsChange = { chatAutoSuggestions = it },
+                            suggestedTitle = chatTitleSuggestion,
+                            onTitleApplied = { chatTitleSuggestion = null },
                             modifier = Modifier.fillMaxSize()
                         )
                         2 -> GrammarAnalysisPanel(
@@ -122,18 +132,22 @@ fun App(driverFactory: DatabaseDriverFactory) {
                     
                     // Suggestions Panel
                     SuggestionsPanel(
-                        selectedText = selectedText,
+                        selectedText = if (activeTab == 1) chatSelectedText else selectedText,
                         fullText = editorText,
                         onApplySuggestion = { suggestion ->
-                            // Only apply if suggestion is not empty and not an error message
-                            if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
-                                scope.launch {
-                                    editorText = suggestion
+                            if (activeTab == 1) {
+                                // In chat mode, apply as title
+                                chatTitleSuggestion = suggestion
+                            } else {
+                                // In editor mode, apply to editor
+                                if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
+                                    scope.launch {
+                                        editorText = suggestion
+                                    }
                                 }
                             }
                         },
                         onAppendSuggestion = { suggestion ->
-                            // Only append if suggestion is not empty and not an error message
                             if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
                                 scope.launch {
                                     editorText = if (editorText.endsWith(" ") || editorText.isEmpty()) {
@@ -148,6 +162,10 @@ fun App(driverFactory: DatabaseDriverFactory) {
                             suggestionError = errorMsg
                         },
                         fontSize = fontSize,
+                        mode = if (activeTab == 1) SuggestionsPanelMode.CHAT else SuggestionsPanelMode.EDITOR,
+                        chatMessages = chatMessages,
+                        autoSuggestions = chatAutoSuggestions,
+                        onTitleSuggestion = { chatTitleSuggestion = it },
                         modifier = Modifier.weight(1f)
                     )
                 }
