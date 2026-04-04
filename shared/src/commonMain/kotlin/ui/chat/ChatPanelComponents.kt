@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import theme.Indigo
+import ui.chat.debugConstraints
 
 @Composable
 internal fun ConnectionStatusBanner(
@@ -75,7 +76,7 @@ internal fun ConnectionStatusBanner(
 
     Surface(
         color = containerColor,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth().debugConstraints("ConnectionStatusBanner Surface")
     ) {
         Row(
             modifier = Modifier

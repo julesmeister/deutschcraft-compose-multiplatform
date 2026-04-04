@@ -19,6 +19,7 @@ import kotlinx.coroutines.launch
 import service.OllamaService
 import theme.Gray800
 import theme.Indigo
+import ui.chat.debugConstraints
 import ui.data.DataManagementPanel
 import ui.settings.AppearanceSection
 import ui.settings.EditorSection
@@ -88,6 +89,7 @@ fun SettingsPanel(
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
+            .debugConstraints("SettingsPanel Column")
             .padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {

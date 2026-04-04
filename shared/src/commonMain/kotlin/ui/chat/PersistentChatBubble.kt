@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.text.selection.SelectionContainer
 import data.repository.ChatMessage
 import data.settings.FontSize
+import ui.chat.debugConstraints
 
 @Composable
 internal fun PersistentChatBubble(
@@ -119,15 +120,13 @@ internal fun PersistentChatBubble(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     border = null
                 ) {
-                    SelectionContainer(
+                    // SelectionContainer removed - may cause scroll crash in LazyColumn
+                    Text(
+                        text = message.content,
+                        style = textStyle,
+                        color = textColor,
                         modifier = Modifier.padding(12.dp)
-                    ) {
-                        Text(
-                            text = message.content,
-                            style = textStyle,
-                            color = textColor
-                        )
-                    }
+                    )
                 }
             }
 

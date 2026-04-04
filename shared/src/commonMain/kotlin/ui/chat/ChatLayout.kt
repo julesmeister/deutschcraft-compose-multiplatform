@@ -17,9 +17,6 @@ import data.repository.ChatMessage
 import data.repository.ChatSession
 import data.settings.FontSize
 
-// DEBUG: Import constraint debugging
-import ui.chat.debugConstraints
-
 @Composable
 internal fun ChatLayout(
     sessions: List<ChatSession>,
@@ -50,6 +47,8 @@ internal fun ChatLayout(
     fontSize: FontSize,
     modifier: Modifier = Modifier
 ) {
+    // DEBUG: Log when ChatLayout starts composing
+    println("[DEBUG] ChatLayout START composition - messages.count=${messages.size}")
     // ═════════════════════════════════════════════════════════════════════════════
     // SECTION: Root Layout - Row with Sidebar + Main Chat Area
     // DEBUG: Log layout constraints for debugging infinite height issues
@@ -188,4 +187,6 @@ private fun ChatMainArea(
             modifier = Modifier.fillMaxWidth()
         )
     }
+    // DEBUG: Log when ChatLayout finishes composing
+    println("[DEBUG] ChatLayout END composition")
 }

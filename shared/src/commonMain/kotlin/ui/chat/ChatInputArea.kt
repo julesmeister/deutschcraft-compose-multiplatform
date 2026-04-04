@@ -19,6 +19,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ui.chat.debugConstraints
 import theme.*
 
 @Composable
@@ -33,7 +34,7 @@ internal fun ChatInputArea(
 ) {
     Surface(
         color = Gray50,
-        modifier = modifier
+        modifier = modifier.debugConstraints("ChatInputArea Surface")
     ) {
         Row(
             modifier = Modifier
