@@ -80,7 +80,7 @@ internal fun ChatMessagesList(
             // NOTE: fillMaxSize here is safe because parent Box has bounded constraints from weight(1f)
             // ─────────────────────────────────────────────────────────────────────────────
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(16.dp).debugConstraints("ChatMessagesList LazyColumn"),
+                modifier = Modifier.fillMaxSize().debugConstraints("ChatMessagesList LazyColumn"),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 itemsIndexed(messages, key = { _, message -> message.id }) { index, message ->
@@ -128,7 +128,8 @@ internal fun ChatMessagesList(
                     // ─────────────────────────────────────────────────────────────────────────────
                     item {
                         Row(
-                            modifier = Modifier.padding(top = 8.dp, start = 56.dp),
+                            // FIX: Changed start padding from 56.dp to 16.dp to match PersistentChatBubble Row padding
+                            modifier = Modifier.padding(top = 8.dp, start = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
