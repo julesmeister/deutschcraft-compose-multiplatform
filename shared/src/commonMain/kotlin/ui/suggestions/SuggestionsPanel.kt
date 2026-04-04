@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import service.OllamaService
+import data.settings.FontSize
 import theme.*
 import ui.components.m3.*
 
@@ -22,6 +23,7 @@ fun SuggestionsPanel(
     onApplySuggestion: (String) -> Unit,
     onAppendSuggestion: (String) -> Unit,
     onError: (String?) -> Unit = {},
+    fontSize: FontSize = FontSize.MEDIUM,
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -31,6 +33,19 @@ fun SuggestionsPanel(
     var isGenerating by remember { mutableStateOf(false) }
     var activeAction by remember { mutableStateOf<String?>(null) }
     var suggestions by remember { mutableStateOf(listOf<String>()) }
+    var selectedModel by remember { mutableStateOf("llama3.2") }
+    
+    // Load available models on startup
+    LaunchedEffect(Unit) {
+        try {
+            val models = ollamaService.getAvailableModels()
+            if (models.isNotEmpty()) {
+                selectedModel = models.first()
+            }
+        } catch (e: Exception) {
+            // Keep default model
+        }
+    }
     
     Column(
         modifier = modifier.fillMaxSize(),
@@ -65,15 +80,22 @@ fun SuggestionsPanel(
         }
         
         // Content Area
-        if (selectedText.isEmpty()) {
-            EmptyState()
+        val textToAnalyze = if (selectedText.isEmpty()) fullText else selectedText
+        
+        if (fullText.isEmpty()) {
+            EmptyState(
+                message = "Start writing in the editor to get AI suggestions",
+                fontSize = fontSize
+            )
         } else {
             SuggestionsContent(
-                selectedText = selectedText,
+                selectedText = textToAnalyze,
+                isFullDocument = selectedText.isEmpty(),
                 currentSuggestion = currentSuggestion,
                 isGenerating = isGenerating,
                 activeAction = activeAction,
                 suggestions = suggestions,
+                fontSize = fontSize,
                 onApply = { onApplySuggestion(currentSuggestion) },
                 onAppend = { onAppendSuggestion(currentSuggestion) },
                 onDismiss = { 
@@ -86,20 +108,20 @@ fun SuggestionsPanel(
         
         Divider(color = Gray200)
         
-        // Contextual Action Buttons - only show when text is selected
+        // Contextual Action Buttons - show when there's text to analyze
         AnimatedVisibility(
-            visible = selectedText.isNotEmpty(),
+            visible = fullText.isNotEmpty(),
             enter = fadeIn() + slideInVertically { it / 2 }
         ) {
             ContextualActions(
-                selectedText = selectedText,
+                selectedText = textToAnalyze,
                 isGenerating = isGenerating,
                 activeAction = activeAction,
                 onCheckGrammar = {
                     activeAction = "grammar"
                     generateSuggestion(
-                        scope, ollamaService, selectedText, fullText, 
-                        "grammar", "llama3.2",
+                        scope, ollamaService, textToAnalyze, fullText, 
+                        "grammar", selectedModel,
                         onStart = { isGenerating = true; currentSuggestion = ""; suggestions = emptyList() },
                         onChunk = { currentSuggestion += it },
                         onComplete = { isGenerating = false },
@@ -113,8 +135,8 @@ fun SuggestionsPanel(
                 onImprove = {
                     activeAction = "improve"
                     generateSuggestion(
-                        scope, ollamaService, selectedText, fullText,
-                        "improve", "llama3.2",
+                        scope, ollamaService, textToAnalyze, fullText,
+                        "improve", selectedModel,
                         onStart = { isGenerating = true; currentSuggestion = ""; suggestions = emptyList() },
                         onChunk = { currentSuggestion += it },
                         onComplete = { isGenerating = false },
@@ -128,8 +150,8 @@ fun SuggestionsPanel(
                 onRephrase = {
                     activeAction = "rephrase"
                     generateSuggestion(
-                        scope, ollamaService, selectedText, fullText,
-                        "rephrase", "llama3.2",
+                        scope, ollamaService, textToAnalyze, fullText,
+                        "rephrase", selectedModel,
                         onStart = { isGenerating = true; currentSuggestion = ""; suggestions = emptyList() },
                         onChunk = { currentSuggestion += it },
                         onComplete = { isGenerating = false },
@@ -147,7 +169,7 @@ fun SuggestionsPanel(
                         currentSuggestion = ""
                         suggestions = emptyList()
                         try {
-                            val result = ollamaService.suggestContinuation(fullText, selectedText, "llama3.2")
+                            val result = ollamaService.suggestContinuation(fullText, textToAnalyze, selectedModel)
                             suggestions = result
                         } catch (e: Exception) {
                             val errorMsg = e.message ?: "Unknown error"

@@ -18,8 +18,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
 import data.repository.ChatMessage
 import data.settings.FontSize
 
@@ -27,6 +29,8 @@ import data.settings.FontSize
 internal fun PersistentChatBubble(
     message: ChatMessage,
     fontSize: FontSize = FontSize.MEDIUM,
+    onEdit: (Long, String) -> Unit = { _, _ -> },
+    onDelete: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -38,6 +42,9 @@ internal fun PersistentChatBubble(
 
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
+
+    var isEditing by remember { mutableStateOf(false) }
+    var editText by remember { mutableStateOf(message.content) }
 
     // Scale text based on font size setting
     val textStyle = when (fontSize) {
@@ -89,30 +96,109 @@ internal fun PersistentChatBubble(
                         bottomEnd = if (isUser) 4.dp else 16.dp
                     )
                 ) {
-                    Text(
-                        text = message.content,
-                        style = textStyle,
-                        color = textColor,
-                        modifier = Modifier.padding(12.dp)
-                    )
+                    if (isEditing) {
+                        Column(
+                            modifier = Modifier.padding(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            BasicTextField(
+                                value = editText,
+                                onValueChange = { editText = it },
+                                textStyle = textStyle.copy(color = textColor),
+                                modifier = Modifier.widthIn(min = 100.dp, max = 300.dp)
+                            )
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        onEdit(message.id, editText)
+                                        isEditing = false
+                                    },
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = textColor
+                                    )
+                                ) {
+                                    Text("Save")
+                                }
+                                TextButton(
+                                    onClick = {
+                                        isEditing = false
+                                        editText = message.content
+                                    },
+                                    colors = ButtonDefaults.textButtonColors(
+                                        contentColor = textColor
+                                    )
+                                ) {
+                                    Text("Cancel")
+                                }
+                            }
+                        }
+                    } else {
+                        Text(
+                            text = message.content,
+                            style = textStyle,
+                            color = textColor,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                 }
 
-                if (isHovered && !isUser) {
-                    IconButton(
-                        onClick = {
-                            clipboardManager.setText(AnnotatedString(message.content))
-                        },
+                // Action buttons on hover (only when not editing)
+                if (isHovered && !isEditing) {
+                    Row(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .size(24.dp)
-                            .padding(4.dp)
+                            .offset(x = 8.dp, y = (-8).dp)
+                            .background(
+                                color = colors.surface,
+                                shape = RoundedCornerShape(8.dp)
+                            )
+                            .padding(horizontal = 4.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp)
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.ContentCopy,
-                            contentDescription = "Copy",
-                            tint = colors.onSurfaceVariant,
-                            modifier = Modifier.size(14.dp)
-                        )
+                        // Edit button (only for user messages)
+                        if (isUser) {
+                            IconButton(
+                                onClick = { isEditing = true },
+                                modifier = Modifier.size(28.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit",
+                                    tint = colors.onSurface,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+
+                        // Copy button
+                        IconButton(
+                            onClick = {
+                                clipboardManager.setText(AnnotatedString(message.content))
+                            },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                contentDescription = "Copy",
+                                tint = colors.onSurface,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Delete button
+                        IconButton(
+                            onClick = { onDelete(message.id) },
+                            modifier = Modifier.size(28.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = colors.error,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
                 }
             }

@@ -11,6 +11,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import data.settings.FontSize
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import service.OllamaService
@@ -47,7 +49,10 @@ internal fun generateSuggestion(
 }
 
 @Composable
-internal fun EmptyState() {
+internal fun EmptyState(
+    message: String = "Select text from the editor to get AI suggestions. Try selecting a sentence or paragraph.",
+    fontSize: FontSize = FontSize.MEDIUM
+) {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -55,8 +60,9 @@ internal fun EmptyState() {
         contentAlignment = Alignment.Center
     ) {
         NoDataPlaceholder(
-            message = "Select text from the editor to get AI suggestions. Try selecting a sentence or paragraph.",
-            icon = Icons.Default.Edit
+            message = message,
+            icon = Icons.Default.Edit,
+            fontSize = fontSize
         )
     }
 }
@@ -65,6 +71,7 @@ internal fun EmptyState() {
 internal fun NoDataPlaceholder(
     message: String,
     icon: ImageVector = Icons.Default.Info,
+    fontSize: FontSize = FontSize.MEDIUM,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -79,9 +86,14 @@ internal fun NoDataPlaceholder(
             modifier = Modifier.size(48.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
+        val textSize = when (fontSize) {
+            FontSize.SMALL -> 14.sp
+            FontSize.MEDIUM -> 16.sp
+            FontSize.LARGE -> 20.sp
+        }
         Text(
             text = message,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodyMedium.copy(fontSize = textSize),
             color = Gray400,
             textAlign = TextAlign.Center
         )

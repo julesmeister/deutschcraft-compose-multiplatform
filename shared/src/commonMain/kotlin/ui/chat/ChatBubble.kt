@@ -17,8 +17,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +38,8 @@ import ui.ChatMessage
 @Composable
 fun ChatBubble(
     message: ChatMessage,
+    onEdit: (Long, String) -> Unit = { _, _ -> },
+    onDelete: (Long) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val isUser = message.isUser
@@ -43,6 +49,9 @@ fun ChatBubble(
     
     val interactionSource = remember { MutableInteractionSource() }
     val isHovered by interactionSource.collectIsHoveredAsState()
+    
+    var isEditing by remember { mutableStateOf(false) }
+    var editText by remember { mutableStateOf(message.content) }
     
     Row(
         modifier = modifier,
@@ -84,31 +93,90 @@ fun ChatBubble(
                     bottomEnd = if (isUser) 4.dp else 18.dp
                 )
             ) {
-                Text(
-                    text = message.text,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = textColor,
-                    modifier = Modifier.padding(14.dp)
-                )
+                if (isEditing) {
+                    BasicTextField(
+                        value = editText,
+                        onValueChange = { editText = it },
+                        modifier = Modifier.padding(14.dp),
+                        singleLine = true
+                    )
+                } else {
+                    Text(
+                        text = message.text,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = textColor,
+                        modifier = Modifier.padding(14.dp)
+                    )
+                }
             }
             
-            // Copy button - appears on hover
-            if (isHovered) {
-                IconButton(
-                    onClick = {
-                        clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.text))
-                    },
+            // Action buttons - appears on hover (only when not editing)
+            if (isHovered && !isEditing) {
+                Row(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .offset(x = (-8).dp, y = 4.dp)
-                        .size(24.dp)
+                        .offset(x = (-8).dp, y = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.ContentCopy,
-                        contentDescription = "Copy",
-                        tint = if (isUser) Color.White.copy(alpha = 0.8f) else Gray600,
-                        modifier = Modifier.size(16.dp)
-                    )
+                    // Edit button (only for user messages)
+                    if (isUser) {
+                        IconButton(
+                            onClick = { isEditing = true },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit",
+                                tint = if (isUser) Color.White.copy(alpha = 0.8f) else Gray600,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+                    }
+                    
+                    // Copy button
+                    IconButton(
+                        onClick = {
+                            clipboardManager.setText(androidx.compose.ui.text.AnnotatedString(message.content))
+                        },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ContentCopy,
+                            contentDescription = "Copy",
+                            tint = if (isUser) Color.White.copy(alpha = 0.8f) else Gray600,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                    
+                    // Delete button
+                    IconButton(
+                        onClick = { onDelete(message.id) },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Delete",
+                            tint = if (isUser) Color.White.copy(alpha = 0.8f) else Gray600,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
+                }
+            } else if (isEditing) {
+                Row(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = (-8).dp, y = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    TextButton(onClick = {
+                        onEdit(message.id, editText)
+                        isEditing = false
+                    }) {
+                        Text("Save")
+                    }
+                    TextButton(onClick = { isEditing = false }) {
+                        Text("Cancel")
+                    }
                 }
             }
         }

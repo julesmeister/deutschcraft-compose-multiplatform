@@ -25,6 +25,7 @@ import data.db.DatabaseDriverFactory
 import data.repository.ChatRepository
 import data.repository.ChatSession
 import data.repository.ChatMessage
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.datetime.Instant
 import service.OllamaService
@@ -93,12 +94,16 @@ fun ChatPanelWithPersistence(
         val sessionId = currentSessionId!!
 
         scope.launch {
+            if (!isActive) return@launch
             // Save user message
             chatRepository.addMessage(sessionId, userMessage, isUser = true)
+            if (!isActive) return@launch
             messages = chatRepository.getMessagesForSession(sessionId)
+            if (!isActive) return@launch
             inputText = ""
 
             currentJob = scope.launch {
+                if (!isActive) return@launch
                 isGenerating = true
                 try {
                     // Get fresh messages from DB for context
@@ -146,7 +151,9 @@ fun ChatPanelWithPersistence(
 
     fun createNewSession() {
         scope.launch {
+            if (!isActive) return@launch
             val newId = chatRepository.createSession()
+            if (!isActive) return@launch
             currentSessionId = newId
             sessions = chatRepository.getAllSessions()
             messages = emptyList()
@@ -156,17 +163,43 @@ fun ChatPanelWithPersistence(
     fun switchSession(sessionId: Long) {
         currentSessionId = sessionId
         scope.launch {
+            if (!isActive) return@launch
             messages = chatRepository.getMessagesForSession(sessionId)
         }
     }
 
     fun deleteSession(sessionId: Long) {
         scope.launch {
+            if (!isActive) return@launch
             chatRepository.deleteSession(sessionId)
+            if (!isActive) return@launch
             sessions = chatRepository.getAllSessions()
+            if (!isActive) return@launch
             if (currentSessionId == sessionId) {
                 currentSessionId = sessions.firstOrNull()?.id
                 messages = currentSessionId?.let { chatRepository.getMessagesForSession(it) } ?: emptyList()
+            }
+        }
+    }
+
+    fun editMessage(messageId: Long, newContent: String) {
+        scope.launch {
+            if (!isActive) return@launch
+            chatRepository.updateMessage(messageId, newContent)
+            if (!isActive) return@launch
+            currentSessionId?.let { sessionId ->
+                messages = chatRepository.getMessagesForSession(sessionId)
+            }
+        }
+    }
+
+    fun deleteMessage(messageId: Long) {
+        scope.launch {
+            if (!isActive) return@launch
+            chatRepository.deleteMessage(messageId)
+            if (!isActive) return@launch
+            currentSessionId?.let { sessionId ->
+                messages = chatRepository.getMessagesForSession(sessionId)
             }
         }
     }
@@ -223,6 +256,8 @@ fun ChatPanelWithPersistence(
                             PersistentChatBubble(
                                 message = message,
                                 fontSize = fontSize,
+                                onEdit = { id, newContent -> editMessage(id, newContent) },
+                                onDelete = { id -> deleteMessage(id) },
                                 modifier = Modifier.fillMaxWidth()
                             )
                         }

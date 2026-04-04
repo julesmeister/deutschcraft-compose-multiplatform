@@ -12,20 +12,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import data.settings.FontSize
 import theme.*
 import ui.components.m3.ShimmerEffect
 
 @Composable
 internal fun SuggestionsContent(
     selectedText: String,
+    isFullDocument: Boolean = false,
     currentSuggestion: String,
     isGenerating: Boolean,
     activeAction: String?,
     suggestions: List<String>,
+    fontSize: FontSize = FontSize.MEDIUM,
     onApply: () -> Unit,
     onAppend: () -> Unit,
     onDismiss: () -> Unit
 ) {
+    // Convert FontSize enum to base sp value
+    val baseFontSize = when (fontSize) {
+        FontSize.SMALL -> 14f
+        FontSize.MEDIUM -> 16f
+        FontSize.LARGE -> 20f
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,14 +51,14 @@ internal fun SuggestionsContent(
         ) {
             Column(modifier = Modifier.padding(12.dp)) {
                 Text(
-                    text = "SELECTED TEXT",
-                    style = MaterialTheme.typography.labelSmall,
+                    text = if (isFullDocument) "FULL DOCUMENT" else "SELECTED TEXT",
+                    style = MaterialTheme.typography.labelSmall.copy(fontSize = (baseFontSize * 0.75).sp),
                     color = Gray500
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     text = if (selectedText.length > 200) selectedText.take(200) + "..." else selectedText,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = (baseFontSize * 0.875).sp),
                     color = Gray700,
                     maxLines = 4,
                     overflow = TextOverflow.Ellipsis
@@ -85,7 +94,7 @@ internal fun SuggestionsContent(
                             Icon(icon, contentDescription = null, tint = Indigo, modifier = Modifier.size(18.dp))
                             Text(
                                 text = label,
-                                style = MaterialTheme.typography.labelMedium,
+                                style = MaterialTheme.typography.labelMedium.copy(fontSize = (baseFontSize * 0.875).sp),
                                 color = Indigo,
                                 fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold
                             )
@@ -106,9 +115,9 @@ internal fun SuggestionsContent(
                     if (currentSuggestion.isNotEmpty()) {
                         Text(
                             text = currentSuggestion,
-                            style = MaterialTheme.typography.bodyMedium,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
                             color = Gray800,
-                            lineHeight = 22.sp,
+                            lineHeight = (baseFontSize * 1.5).sp,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                         
@@ -142,9 +151,9 @@ internal fun SuggestionsContent(
                             
                             Text(
                                 text = "${index + 1}. $suggestion",
-                                style = MaterialTheme.typography.bodyMedium,
+                                style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
                                 color = Gray800,
-                                lineHeight = 22.sp,
+                                lineHeight = (baseFontSize * 1.5).sp,
                                 modifier = Modifier.padding(vertical = 4.dp)
                             )
                             
@@ -202,7 +211,7 @@ internal fun SuggestionsContent(
                     )
                     Text(
                         text = "Choose an action below to get AI assistance for your selected text.",
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = (baseFontSize * 0.875).sp),
                         color = Gray500
                     )
                 }

@@ -31,6 +31,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import service.OllamaService
 import theme.*
@@ -82,6 +83,7 @@ fun ChatPanel(
         inputText = ""
         
         currentJob = scope.launch {
+            if (!isActive) return@launch
             isGenerating = true
             try {
                 val response = ollamaService.chat(

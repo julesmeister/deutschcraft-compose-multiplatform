@@ -55,6 +55,14 @@ class SqlDelightChatRepository(driver: SqlDriver) : ChatRepository {
         sessionQueries.deleteSession(sessionId)
     }
 
+    override suspend fun deleteMessage(messageId: Long) {
+        messageQueries.deleteMessage(messageId)
+    }
+
+    override suspend fun updateMessage(messageId: Long, content: String) {
+        messageQueries.updateMessage(content, messageId)
+    }
+
     override suspend fun updateSessionTitle(sessionId: Long, title: String) {
         sessionQueries.updateSession(Clock.System.now().toEpochMilliseconds(), title, sessionId)
     }

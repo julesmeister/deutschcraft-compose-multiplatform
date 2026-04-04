@@ -147,6 +147,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
                         onError = { errorMsg ->
                             suggestionError = errorMsg
                         },
+                        fontSize = fontSize,
                         modifier = Modifier.weight(1f)
                     )
                 }
