@@ -107,10 +107,11 @@ fun SuggestionsPanel(
         AnimatedContent(
             targetState = mode,
             transitionSpec = {
-                fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
-                slideInHorizontally { it / 4 } togetherWith
-                fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
-                slideOutHorizontally { -it / 4 }
+                (fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                slideInHorizontally { it / 4 }) togetherWith
+                (fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                slideOutHorizontally { -it / 4 })
+                using SizeTransform { _, targetSize -> targetSize }
             },
             modifier = Modifier.weight(1f)
         ) { targetMode ->

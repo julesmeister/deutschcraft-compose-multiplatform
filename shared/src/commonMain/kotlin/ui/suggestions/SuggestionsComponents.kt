@@ -37,10 +37,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.settings.FontSize
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.graphicsLayer
 import theme.*
 import ui.suggestions.animations.TypewriterText
 import ui.suggestions.animations.fadeTween
+import ui.suggestions.animations.RotatingIcon
 
 
 @Composable
