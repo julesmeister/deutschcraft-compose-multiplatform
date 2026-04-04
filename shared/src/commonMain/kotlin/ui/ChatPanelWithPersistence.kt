@@ -257,6 +257,7 @@ fun ChatPanelWithPersistence(
                 onSend = { sendMessage() },
                 onStop = { stopGeneration() },
                 isGenerating = isGenerating,
+                fontSize = fontSize,
                 modifier = Modifier.fillMaxWidth()
             )
         }

@@ -47,7 +47,7 @@ internal fun PersistentChatBubble(
     }
 
     Surface(
-        color = colors.surface,
+        color = Color.Transparent,
         modifier = modifier
     ) {
         Row(
@@ -77,7 +77,7 @@ internal fun PersistentChatBubble(
 
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(0.75f)
+                    .wrapContentWidth()
                     .hoverable(interactionSource)
             ) {
                 Card(

@@ -21,6 +21,7 @@ fun SuggestionsPanel(
     fullText: String,
     onApplySuggestion: (String) -> Unit,
     onAppendSuggestion: (String) -> Unit,
+    onError: (String?) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -102,7 +103,11 @@ fun SuggestionsPanel(
                         onStart = { isGenerating = true; currentSuggestion = ""; suggestions = emptyList() },
                         onChunk = { currentSuggestion += it },
                         onComplete = { isGenerating = false },
-                        onError = { currentSuggestion = "Error: $it"; isGenerating = false }
+                        onError = { errorMsg ->
+                            currentSuggestion = "Error: $errorMsg"
+                            isGenerating = false
+                            onError(errorMsg)
+                        }
                     )
                 },
                 onImprove = {
@@ -113,7 +118,11 @@ fun SuggestionsPanel(
                         onStart = { isGenerating = true; currentSuggestion = ""; suggestions = emptyList() },
                         onChunk = { currentSuggestion += it },
                         onComplete = { isGenerating = false },
-                        onError = { currentSuggestion = "Error: $it"; isGenerating = false }
+                        onError = { errorMsg ->
+                            currentSuggestion = "Error: $errorMsg"
+                            isGenerating = false
+                            onError(errorMsg)
+                        }
                     )
                 },
                 onRephrase = {
@@ -124,7 +133,11 @@ fun SuggestionsPanel(
                         onStart = { isGenerating = true; currentSuggestion = ""; suggestions = emptyList() },
                         onChunk = { currentSuggestion += it },
                         onComplete = { isGenerating = false },
-                        onError = { currentSuggestion = "Error: $it"; isGenerating = false }
+                        onError = { errorMsg ->
+                            currentSuggestion = "Error: $errorMsg"
+                            isGenerating = false
+                            onError(errorMsg)
+                        }
                     )
                 },
                 onSuggestMore = {
@@ -137,7 +150,9 @@ fun SuggestionsPanel(
                             val result = ollamaService.suggestContinuation(fullText, selectedText, "llama3.2")
                             suggestions = result
                         } catch (e: Exception) {
-                            currentSuggestion = "Error: ${e.message}"
+                            val errorMsg = e.message ?: "Unknown error"
+                            currentSuggestion = "Error: $errorMsg"
+                            onError(errorMsg)
                         } finally {
                             isGenerating = false
                         }

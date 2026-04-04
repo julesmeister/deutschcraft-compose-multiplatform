@@ -28,6 +28,7 @@ internal fun ChatInputArea(
     onSend: () -> Unit,
     onStop: () -> Unit,
     isGenerating: Boolean,
+    fontSize: data.settings.FontSize = data.settings.FontSize.MEDIUM,
     modifier: Modifier = Modifier
 ) {
     Surface(
@@ -50,7 +51,11 @@ internal fun ChatInputArea(
                     .background(Gray100)
                     .heightIn(min = 48.dp, max = 120.dp),
                 textStyle = TextStyle(
-                    fontSize = 16.sp,
+                    fontSize = when (fontSize) {
+                        data.settings.FontSize.SMALL -> 14.sp
+                        data.settings.FontSize.MEDIUM -> 16.sp
+                        data.settings.FontSize.LARGE -> 20.sp
+                    },
                     color = Gray800
                 ),
                 maxLines = 4,
@@ -67,7 +72,11 @@ internal fun ChatInputArea(
                         if (value.isEmpty()) {
                             Text(
                                 text = "Ask AI about your writing...",
-                                fontSize = 16.sp,
+                                fontSize = when (fontSize) {
+                                    data.settings.FontSize.SMALL -> 14.sp
+                                    data.settings.FontSize.MEDIUM -> 16.sp
+                                    data.settings.FontSize.LARGE -> 20.sp
+                                },
                                 color = Gray400
                             )
                         }

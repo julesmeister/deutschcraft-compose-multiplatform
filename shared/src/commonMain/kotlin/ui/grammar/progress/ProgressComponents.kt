@@ -29,7 +29,7 @@ fun ProgressOverviewCard(stats: UserProgressStats, modifier: Modifier = Modifier
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
         modifier = modifier
     ) {
         Column(

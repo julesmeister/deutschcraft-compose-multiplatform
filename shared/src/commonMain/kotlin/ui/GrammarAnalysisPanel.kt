@@ -17,7 +17,7 @@ import androidx.compose.ui.unit.dp
 import data.model.*
 import service.*
 import theme.*
-import ui.grammar.progress.ProgressOverviewCard
+import ui.components.SegmentedSelector
 import ui.grammar.tabs.ErrorsTab
 import ui.grammar.tabs.OverviewTab
 import ui.grammar.tabs.StrengthsTab
@@ -109,7 +109,10 @@ fun GrammarAnalysisPanel(
 
         // Progress Overview
         progressStats?.let { stats ->
-            ProgressOverviewCard(stats, modifier = Modifier.fillMaxWidth())
+            ProgressOverviewCard(
+                stats, 
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)
+            )
         }
 
         // Analysis Results
@@ -120,28 +123,19 @@ fun GrammarAnalysisPanel(
                 modifier = Modifier.fillMaxWidth().weight(1f)
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
-                    // Tabs
-                    TabRow(
-                        selectedTabIndex = selectedTab,
-                        containerColor = Color.White,
-                        contentColor = Indigo
-                    ) {
-                        Tab(
-                            selected = selectedTab == 0,
-                            onClick = { selectedTab = 0 },
-                            text = { Text("Overview") }
-                        )
-                        Tab(
-                            selected = selectedTab == 1,
-                            onClick = { selectedTab = 1 },
-                            text = { Text("Errors (${result.analysis.grammarErrors.size})") }
-                        )
-                        Tab(
-                            selected = selectedTab == 2,
-                            onClick = { selectedTab = 2 },
-                            text = { Text("Strengths") }
-                        )
-                    }
+                    // Tab selection
+                val tabs = listOf(
+                    "Overview",
+                    "Errors (${result.analysis.grammarErrors.size})",
+                    "Strengths"
+                )
+                
+                SegmentedSelector(
+                    options = tabs,
+                    selectedIndex = selectedTab,
+                    onSelect = { selectedTab = it },
+                    modifier = Modifier.fillMaxWidth().padding(16.dp)
+                )
 
                     // Tab content
                     Box(

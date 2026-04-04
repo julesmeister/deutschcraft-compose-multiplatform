@@ -60,6 +60,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
         var selectedText by remember { mutableStateOf("") }
         var activeTab by remember { mutableStateOf(0) } // 0 = Editor, 1 = Chat, 2 = Analysis, 3 = Settings
         var showRightPanel by remember { mutableStateOf(true) }
+        var suggestionError by remember { mutableStateOf<String?>(null) }
         
         Scaffold { paddingValues ->
             Row(
@@ -88,6 +89,9 @@ fun App(driverFactory: DatabaseDriverFactory) {
                             onTextChange = { editorText = it },
                             onSelectionChange = { selectedText = it },
                             onAnalyzeClick = { activeTab = 2 },
+                            errorMessage = suggestionError,
+                            onErrorDismiss = { suggestionError = null },
+                            fontSize = fontSize,
                             modifier = Modifier.fillMaxSize()
                         )
                         1 -> ChatPanelWithPersistence(
@@ -139,6 +143,9 @@ fun App(driverFactory: DatabaseDriverFactory) {
                                     }
                                 }
                             }
+                        },
+                        onError = { errorMsg ->
+                            suggestionError = errorMsg
                         },
                         modifier = Modifier.weight(1f)
                     )
