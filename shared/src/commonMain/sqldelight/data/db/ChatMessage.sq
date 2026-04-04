@@ -1,0 +1,31 @@
+CREATE TABLE chatMessage (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    session_id INTEGER NOT NULL,
+    content TEXT NOT NULL,
+    is_user INTEGER NOT NULL DEFAULT 0,
+    timestamp INTEGER NOT NULL,
+    FOREIGN KEY (session_id) REFERENCES chatSession(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_chat_message_session ON chatMessage(session_id);
+
+selectMessagesForSession:
+SELECT * FROM chatMessage
+WHERE session_id = :session_id
+ORDER BY timestamp ASC;
+
+selectRecentMessages:
+SELECT * FROM chatMessage
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+insertMessage:
+INSERT INTO chatMessage(session_id, content, is_user, timestamp)
+VALUES (:session_id, :content, :is_user, :timestamp);
+
+deleteMessagesForSession:
+DELETE FROM chatMessage
+WHERE session_id = :session_id;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

@@ -1,7 +1,7 @@
 package service
 
 import data.db.DatabaseDriverFactory
-import data.db.StudyDatabase
+import data.db.DatabaseManager
 import data.model.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -16,7 +16,7 @@ class GrammarAnalysisService(
 ) {
     private val ollamaService = OllamaService()
     private val parser = GrammarAnalysisParser()
-    private val database = StudyDatabase(driverFactory)
+    private val db = DatabaseManager(driverFactory)
     
     /**
      * Analyze text with AI and persist results to database.
@@ -29,7 +29,7 @@ class GrammarAnalysisService(
     ): AnalysisResult {
         return withContext(Dispatchers.Default) {
             // 1. Record the study entry first
-            val entryId = database.insertStudyEntry(
+            val entryId = db.entries.insert(
                 content = text,
                 type = entryType,
                 topic = topic
@@ -39,7 +39,7 @@ class GrammarAnalysisService(
             val analysis = getStructuredAnalysis(text)
             
             // 3. Update entry with analysis results
-            database.updateEntryAnalysis(
+            db.entries.updateAnalysis(
                 entryId = entryId,
                 correctedContent = analysis.correctedText,
                 analysisJson = parser.serializeAnalysis(analysis)
@@ -47,7 +47,7 @@ class GrammarAnalysisService(
             
             // 4. Record grammar mistakes
             analysis.grammarErrors.forEach { error ->
-                database.recordGrammarMistake(
+                db.mistakes.record(
                     originalText = error.originalText,
                     correction = error.correction,
                     errorType = error.errorType,
@@ -58,7 +58,7 @@ class GrammarAnalysisService(
             
             // 5. Record strengths
             analysis.strengths.forEach { strength ->
-                database.recordStrength(
+                db.strengths.record(
                     aspect = strength.aspect,
                     description = strength.description,
                     confidenceScore = 1.0
@@ -68,12 +68,12 @@ class GrammarAnalysisService(
             // 6. Record topics/learning areas
             analysis.learningTopics.forEach { topicName ->
                 val category = categorizeTopic(topicName)
-                database.recordTopicEncounter(topicName, category)
+                db.topics.recordEncounter(topicName, category)
             }
             
             // 7. Extract and record vocabulary
             extractVocabulary(text, analysis).forEach { vocab ->
-                database.recordVocabulary(
+                db.vocabulary.record(
                     word = vocab.word,
                     context = vocab.context,
                     translation = vocab.translation,
@@ -131,15 +131,15 @@ class GrammarAnalysisService(
      * Get user's overall progress statistics.
      */
     fun getProgressStats(): UserProgressStats {
-        val mistakeStats = database.getMistakeStats()
-        val topMistakeTypes = database.getTopMistakeTypes(5)
-        val topStrengths = database.getTopStrengths(5)
+        val mistakeStats = db.mistakes.getStats()
+        val topMistakeTypes = db.mistakes.getTopTypes(5)
+        val topStrengths = db.strengths.getTop(5)
         
         return UserProgressStats(
-            totalWritingSessions = database.getStudySessionCount().toInt(),
-            totalWordsWritten = database.getTotalWordsWritten().toInt(),
+            totalWritingSessions = db.entries.getCount().toInt(),
+            totalWordsWritten = db.entries.getTotalWords().toInt(),
             errorFrequencyByType = topMistakeTypes.associate { it },
-            averageCefrProgression = emptyMap(), // Would need historical CEFR data
+            averageCefrProgression = emptyMap(),
             topStrengths = topStrengths.map { it.first },
             improvementAreas = topMistakeTypes.map { it.first.name.lowercase().replace("_", " ") }
         )
@@ -149,8 +149,8 @@ class GrammarAnalysisService(
      * Get mistake patterns for focused practice.
      */
     fun getMistakePatterns(): MistakePatterns {
-        val byType = database.getTopMistakeTypes(10)
-        val recent = database.getRecentMistakes(20)
+        val byType = db.mistakes.getTopTypes(10)
+        val recent = db.mistakes.getRecent(20)
         val recurring = recent.filter { it.recurrenceCount > 1 }
         
         return MistakePatterns(
@@ -165,7 +165,7 @@ class GrammarAnalysisService(
      * Get recent study history.
      */
     fun getRecentHistory(limit: Int = 20): List<StudyHistoryEntry> {
-        return database.getRecentEntries(limit.toLong()).map { entry ->
+        return db.entries.getRecent(limit.toLong()).map { entry ->
             val analysis = entry.analysisJson?.let { parser.deserializeAnalysis(it) }
             
             StudyHistoryEntry(
@@ -216,7 +216,7 @@ class GrammarAnalysisService(
         }
         
         // Recommend vocabulary expansion if complexity is low
-        if (stats.totalWordsWritten > 1000 && patterns.recentMistakes.none { it.errorType == ErrorType.VOCABULARY }) {
+        if (stats.totalWordsWritten > 1000 && patterns.recentMistakes.size < 3) {
             recommendations.add(
                 LearningRecommendation(
                     type = RecommendationType.VOCABULARY,
@@ -234,9 +234,8 @@ class GrammarAnalysisService(
     // ==================== Private Helper Methods ====================
     
     private fun getRecurringMistakes(currentErrors: List<GrammarError>): List<GrammarError> {
-        // Check current errors against database for recurrence
         return currentErrors.filter { error ->
-            database.getMistakesByType(error.errorType, 100)
+            db.mistakes.getByType(error.errorType, 100)
                 .any { it.originalText.equals(error.originalText, ignoreCase = true) }
         }
     }

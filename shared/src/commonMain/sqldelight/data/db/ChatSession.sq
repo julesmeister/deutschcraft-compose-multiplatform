@@ -1,0 +1,31 @@
+CREATE TABLE chatSession (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+selectAllSessions:
+SELECT * FROM chatSession
+ORDER BY updated_at DESC;
+
+selectSessionById:
+SELECT * FROM chatSession
+WHERE id = :id;
+
+insertSession:
+INSERT INTO chatSession(title, created_at, updated_at)
+VALUES (:title, :created_at, :updated_at);
+
+updateSession:
+UPDATE chatSession
+SET updated_at = :updated_at,
+    title = :title
+WHERE id = :id;
+
+deleteSession:
+DELETE FROM chatSession
+WHERE id = :id;
+
+lastInsertRowId:
+SELECT last_insert_rowid();

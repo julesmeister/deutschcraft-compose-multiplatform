@@ -1,7 +1,9 @@
 package ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -388,33 +390,3 @@ private fun ChatBubble(
     }
 }
 
-@Composable
-private fun EmptyChatState(
-    modifier: Modifier = Modifier
-) {
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-        modifier = modifier.padding(32.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.Send,
-            contentDescription = null,
-            tint = Gray300,
-            modifier = Modifier.size(64.dp)
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "Chat with AI",
-            style = MaterialTheme.typography.titleMedium,
-            color = Gray600
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "Ask questions about your writing, get feedback, or brainstorm ideas. The AI knows about your current document.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = Gray400,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center
-        )
-    }
-}

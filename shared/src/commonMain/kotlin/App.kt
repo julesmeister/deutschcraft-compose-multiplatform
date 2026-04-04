@@ -24,6 +24,7 @@ import theme.DeutschCraftTheme
 import theme.Gray200
 import theme.Gray50
 import theme.Gray100
+import theme.Gray600
 import theme.Gray700
 import theme.Indigo
 import ui.EditorPanel

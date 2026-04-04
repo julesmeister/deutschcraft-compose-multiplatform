@@ -11,57 +11,43 @@ class SqlDelightChatRepository(driver: SqlDriver) : ChatRepository {
     private val messageQueries = database.chatMessageQueries
 
     override suspend fun createSession(title: String?): Long {
-        val now = Clock.System.now()
-        sessionQueries.insertSession(
-            title = title,
-            created_at = now,
-            updated_at = now
-        )
+        val now = Clock.System.now().toEpochMilliseconds()
+        sessionQueries.insertSession(title, now, now)
         return sessionQueries.lastInsertRowId().executeAsOne()
     }
 
     override suspend fun getAllSessions(): List<ChatSession> {
         return sessionQueries.selectAllSessions()
             .executeAsList()
-            .map { it.toChatSession() }
+            .map { ChatSession(it.id, it.title, Instant.fromEpochMilliseconds(it.created_at), Instant.fromEpochMilliseconds(it.updated_at)) }
     }
 
     override suspend fun getSession(sessionId: Long): ChatSession? {
-        return sessionQueries.selectSessionById(sessionId)
-            .executeAsOneOrNull()
-            ?.toChatSession()
+        val row = sessionQueries.selectSessionById(sessionId).executeAsOneOrNull() ?: return null
+        return ChatSession(row.id, row.title, Instant.fromEpochMilliseconds(row.created_at), Instant.fromEpochMilliseconds(row.updated_at))
     }
 
     override suspend fun addMessage(sessionId: Long, content: String, isUser: Boolean): Long {
-        val now = Clock.System.now()
-        
-        // Update session timestamp
+        val now = Clock.System.now().toEpochMilliseconds()
         val session = sessionQueries.selectSessionById(sessionId).executeAsOneOrNull()
         if (session != null) {
             val newTitle = session.title ?: if (!isUser) content.take(50) else session.title
-            sessionQueries.updateSession(sessionId, now, newTitle)
+            sessionQueries.updateSession(now, newTitle, sessionId)
         }
-        
-        // Insert message
-        messageQueries.insertMessage(
-            session_id = sessionId,
-            content = content,
-            is_user = isUser,
-            timestamp = now
-        )
+        messageQueries.insertMessage(sessionId, content, if (isUser) 1 else 0, now)
         return messageQueries.lastInsertRowId().executeAsOne()
     }
 
     override suspend fun getMessagesForSession(sessionId: Long): List<ChatMessage> {
         return messageQueries.selectMessagesForSession(sessionId)
             .executeAsList()
-            .map { it.toChatMessage() }
+            .map { ChatMessage(it.id, it.session_id, it.content, it.is_user == 1L, Instant.fromEpochMilliseconds(it.timestamp)) }
     }
 
     override suspend fun getRecentMessages(limit: Int): List<ChatMessage> {
         return messageQueries.selectRecentMessages(limit.toLong())
             .executeAsList()
-            .map { it.toChatMessage() }
+            .map { ChatMessage(it.id, it.session_id, it.content, it.is_user == 1L, Instant.fromEpochMilliseconds(it.timestamp)) }
     }
 
     override suspend fun deleteSession(sessionId: Long) {
@@ -70,45 +56,11 @@ class SqlDelightChatRepository(driver: SqlDriver) : ChatRepository {
     }
 
     override suspend fun updateSessionTitle(sessionId: Long, title: String) {
-        val now = Clock.System.now()
-        sessionQueries.updateSession(sessionId, now, title)
+        sessionQueries.updateSession(Clock.System.now().toEpochMilliseconds(), title, sessionId)
     }
 
     override suspend fun getOrCreateDefaultSession(): Long {
         val sessions = sessionQueries.selectAllSessions().executeAsList()
-        return if (sessions.isNotEmpty()) {
-            sessions.first().id
-        } else {
-            createSession("Default Chat")
-        }
+        return if (sessions.isNotEmpty()) sessions.first().id else createSession("Default Chat")
     }
-}
-
-private fun SelectAllSessions.toChatSession(): ChatSession {
-    return ChatSession(
-        id = this.id,
-        title = this.title,
-        createdAt = this.created_at,
-        updatedAt = this.updated_at
-    )
-}
-
-private fun SelectMessagesForSession.toChatMessage(): ChatMessage {
-    return ChatMessage(
-        id = this.id,
-        sessionId = this.session_id,
-        content = this.content,
-        isUser = this.is_user,
-        timestamp = this.timestamp
-    )
-}
-
-private fun SelectRecentMessages.toChatMessage(): ChatMessage {
-    return ChatMessage(
-        id = this.id,
-        sessionId = this.session_id,
-        content = this.content,
-        isUser = this.is_user,
-        timestamp = this.timestamp
-    )
 }

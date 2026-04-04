@@ -106,7 +106,7 @@ Rules:
     }
     
     private fun tryExtractFromMarkdown(response: String, originalText: String): GrammarAnalysisResponse? {
-        val jsonRegex = Regex("```(?:json)?\s*([\\s\\S]*?)```")
+        val jsonRegex = Regex("""```(?:json)?\s*([\s\S]*?)```""")
         val match = jsonRegex.find(response)
         
         return match?.groupValues?.get(1)?.let { jsonContent ->
