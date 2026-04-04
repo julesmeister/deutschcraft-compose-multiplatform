@@ -135,11 +135,12 @@ internal fun ChatSuggestionsContent(
         FontSize.LARGE -> 20f
     }
     
+    println("[SEQ 9] ChatSuggestionsContent: START composition")
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight()
-            .verticalScroll(rememberScrollState())
+            // FIX: Removed fillMaxHeight() + verticalScroll - parent provides bounded constraints
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {

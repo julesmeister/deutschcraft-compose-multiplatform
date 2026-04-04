@@ -104,6 +104,8 @@ fun SuggestionsPanel(
         // Content Area with animated transitions
         val textToAnalyze = if (selectedText.isEmpty()) fullText else selectedText
         
+        println("[SEQ 1] SuggestionsPanel: Starting AnimatedContent composition")
+        
         AnimatedContent(
             targetState = mode,
             transitionSpec = {
@@ -117,24 +119,27 @@ fun SuggestionsPanel(
         ) { targetMode ->
             when (targetMode) {
                 SuggestionsPanelMode.CHAT -> {
-                    println("[DEBUG COMPOSE] SuggestionsPanel CHAT mode - chatMessages.isEmpty()=${chatMessages.isEmpty()}")
+                    println("[SEQ 2] SuggestionsPanel: CHAT mode branch")
                     if (chatMessages.isEmpty()) {
+                        println("[SEQ 3] SuggestionsPanel: Empty state - no messages")
                         EmptyState(
                             message = "Start a conversation to get AI assistance",
                             fontSize = fontSize
                         )
                     } else {
-                        // FIX: Wrap in Box to ensure bounded constraints during AnimatedContent transition
+                        println("[SEQ 4] SuggestionsPanel: Entering CHAT content Box")
+                        // FIX: Remove verticalScroll from here - it's handled inside ChatSuggestionsContent
                         Box(modifier = Modifier.fillMaxSize()) {
+                            println("[SEQ 5] SuggestionsPanel: Inside Box, building Column")
                             Column(
                                 modifier = Modifier
                                     .fillMaxSize()
-                                    .verticalScroll(rememberScrollState())
                                     .padding(16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp)
                             ) {
                             // Auto-generated follow-up suggestions (shown when AI replies)
                             if (autoSuggestions.isNotEmpty()) {
+                                println("[SEQ 6] SuggestionsPanel: AutoSuggestionsContent composition")
                                 AutoSuggestionsContent(
                                     suggestions = autoSuggestions,
                                     fontSize = fontSize,
@@ -145,6 +150,7 @@ fun SuggestionsPanel(
                             }
                             
                             // Manual suggestion results
+                            println("[SEQ 7] SuggestionsPanel: ChatSuggestionsContent composition START")
                             ChatSuggestionsContent(
                                 selectedText = selectedText,
                                 currentSuggestion = currentSuggestion,

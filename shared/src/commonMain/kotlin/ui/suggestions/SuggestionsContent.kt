@@ -128,10 +128,13 @@ internal fun SuggestionsContent(
         FontSize.MEDIUM -> 16f
         FontSize.LARGE -> 20f
     }
+    println("[SEQ 10] SuggestionsContent: START composition")
+    
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .fillMaxHeight()  // FIX: Use fillMaxHeight for bounded constraints
+            // FIX: Use weight(1f) instead of fillMaxHeight() for proper constraint handling in AnimatedContent
+            .weight(1f, fill = false)
             .verticalScroll(rememberScrollState())
             .debugConstraints("SuggestionsContent Column")
             .padding(16.dp),
