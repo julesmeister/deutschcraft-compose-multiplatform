@@ -41,7 +41,7 @@ import ui.settings.SettingsToggleRow
 import ui.settings.ThemeSelector
 import ui.settings.FontSizeSelector
 import ui.settings.ModelSelector
-import ui.settings.DailyGoalSelector
+import ui.data.DataManagementPanel
 
 @Composable
 fun SettingsPanel(
@@ -243,29 +243,11 @@ fun SettingsPanel(
             )
         }
 
-        // Danger Zone
+        // Data Management Section
         Spacer(modifier = Modifier.height(16.dp))
-        SettingsSection(title = "Data Management", isDanger = true) {
-            Button(
-                onClick = {
-                    scope.launch {
-                        settingsRepo.clearAll()
-                    }
-                },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xFFFEE2E2),
-                    contentColor = Color(0xFFDC2626)
-                ),
-                shape = RoundedCornerShape(8.dp)
-            ) {
-                Icon(
-                    imageVector = Icons.Default.DeleteForever,
-                    contentDescription = null,
-                    modifier = Modifier.size(18.dp)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text("Reset All Settings")
-            }
-        }
+        DataManagementPanel(
+            driverFactory = driverFactory,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
