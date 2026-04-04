@@ -14,28 +14,40 @@
 - Added `weight(1f)` then changed to `fillMaxSize()` for verticalScroll Column in CHAT mode
 - Result: Still crashes
 
-## Debug Checkpoint System (INCOMPLETE)
-Added 7 constraint debug checkpoints using custom LayoutModifier:
-- `App.kt Content Box` - Shows finite constraints
-- `ChatLayout Row` - Shows finite constraints
-- `SessionSidebar LazyColumn` - Shows finite constraints
-- `ChatMainArea Column` - Shows finite constraints
-- `ChatMessagesList Box` - Shows finite constraints
-- `ChatMessagesList LazyColumn` - Shows finite constraints
-- `SuggestionsPanel CHAT Column` - NEVER APPEARS in output
+## Debug Checkpoint Results (Latest Run - April 4, 2026)
+All 9 checkpoints show **finite constraints** (maxHeight is bounded):
+- `App.kt Content Box` → maxHeight=486 ✓
+- `ChatLayout Row` → maxHeight=486 ✓
+- `SessionSidebar LazyColumn` → maxHeight=405 ✓
+- `ChatMainArea Column` → maxHeight=486 ✓
+- `ChatMessagesList Box` → maxHeight=297 ✓
+- `ChatMessagesList LazyColumn` → maxHeight=265 ✓
 
-**Critical Finding:** The `SuggestionsPanel` checkpoint NEVER appears in logs, suggesting the crash happens BEFORE measurement phase or the component never gets measured.
+**CRITICAL FINDING:** `PersistentChatBubble Column` shows INFINITE height:
+```
+[DEBUG CONSTRAINTS] PersistentChatBubble Column msg=1
+  minWidth=250, maxWidth=250
+  minHeight=0, maxHeight=2147483647 (INFINITE!)
+```
 
-## Key Insight: Checkpoint Approach Doesn't Work
-Constraint-based debugging (custom LayoutModifier) does NOT catch the culprit because:
-1. The crash happens during **composition phase**, not measurement phase
-2. The crash occurs **before** checkpoints can log constraints
-3. `AnimatedContent` transition creates temporary unbounded constraints
+This is expected for LazyColumn items, BUT the crash suggests a scrollable component inside the bubble is using these infinite constraints.
 
-## Actual Culprits (Suspected)
-1. **SuggestionsPanel.kt line 131** - `Column` with `verticalScroll` inside `AnimatedContent`
-2. **SuggestionsContent.kt line 133** - `Column` with `verticalScroll` inside `AnimatedContent`
-3. Both have `verticalScroll` but don't get bounded constraints during animation transition
+**Checkpoints that NEVER appear:**
+- `ChatInputArea Surface` - NOT REACHED
+- `ConnectionStatusBanner Surface` - NOT REACHED
+
+**Conclusion:** Crash happens inside LazyColumn item composition, likely in PersistentChatBubble or its children.
+
+## Actual Culprit Location (Updated Hypothesis)
+The crash is NOT in the main layout chain. It's likely in:
+1. **LazyColumn item composition** - Individual chat bubbles may have infinite height
+2. **ConnectionStatusBanner** - Simple component, unlikely culprit
+3. **Recomposition trigger** - State change during tab switch causes re-measure with infinite constraints
+
+## Next Debugging Steps
+1. Add checkpoint inside LazyColumn items (PersistentChatBubble)
+2. Disable all animations in LazyColumn
+3. Check if BasicTextField in ChatInputArea has issues (it uses weight(1f) inside Row)
 
 ### Fix 3: Remove AnimatedContent (FAILED - REVERTED)
 - Replaced `AnimatedContent` with simple `Box` in SuggestionsPanel.kt
