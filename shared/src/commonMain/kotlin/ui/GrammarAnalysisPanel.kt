@@ -161,40 +161,80 @@ fun GrammarAnalysisPanel(
 
 @Composable
 private fun ProgressOverviewCard(stats: UserProgressStats, modifier: Modifier = Modifier) {
-    Surface(
-        color = Indigo.copy(alpha = 0.05f),
-        shape = RoundedCornerShape(12.dp),
+    Card(
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
         modifier = modifier
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            modifier = Modifier.padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            Text(
-                text = "Your Progress",
-                style = MaterialTheme.typography.labelMedium,
-                color = Indigo,
-                fontWeight = FontWeight.SemiBold
-            )
+            // Header with icon
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(44.dp)
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(Indigo.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.TrendingUp,
+                        contentDescription = null,
+                        tint = Indigo,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+                Column {
+                    Text(
+                        text = "Your Progress",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = Gray800
+                    )
+                    Text(
+                        text = "Keep up the great work!",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = Gray500
+                    )
+                }
+            }
             
+            Divider(color = Gray200)
+            
+            // Stats in a row with dividers
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceEvenly
             ) {
-                StatItem(
+                M3StatItem(
                     icon = Icons.Default.Edit,
                     value = stats.totalWritingSessions.toString(),
-                    label = "Sessions"
+                    label = "Sessions",
+                    accentColor = Indigo
                 )
-                StatItem(
+                
+                VerticalDivider(color = Gray200, modifier = Modifier.height(40.dp))
+                
+                M3StatItem(
                     icon = Icons.Default.MenuBook,
                     value = stats.totalWordsWritten.toString(),
-                    label = "Words"
+                    label = "Words",
+                    accentColor = Color(0xFF4CAF50)
                 )
-                StatItem(
+                
+                VerticalDivider(color = Gray200, modifier = Modifier.height(40.dp))
+                
+                M3StatItem(
                     icon = Icons.Default.School,
                     value = stats.errorFrequencyByType.size.toString(),
-                    label = "Error Types"
+                    label = "Focus Areas",
+                    accentColor = Color(0xFFFF9800)
                 )
             }
         }
@@ -202,26 +242,39 @@ private fun ProgressOverviewCard(stats: UserProgressStats, modifier: Modifier = 
 }
 
 @Composable
-private fun StatItem(icon: androidx.compose.ui.graphics.vector.ImageVector, value: String, label: String) {
+private fun M3StatItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    value: String,
+    label: String,
+    accentColor: Color
+) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = Indigo,
-            modifier = Modifier.size(20.dp)
-        )
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(accentColor.copy(alpha = 0.1f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = accentColor,
+                modifier = Modifier.size(20.dp)
+            )
+        }
         Text(
             text = value,
-            style = MaterialTheme.typography.titleMedium,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.Bold,
             color = Gray800
         )
         Text(
             text = label,
-            style = MaterialTheme.typography.labelSmall,
+            style = MaterialTheme.typography.labelMedium,
             color = Gray500
         )
     }
