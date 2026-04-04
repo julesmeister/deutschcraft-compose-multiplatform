@@ -2,6 +2,7 @@ package ui.suggestions
 
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.*
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -112,8 +113,10 @@ fun SuggestionsPanel(
                 (fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
                 slideInHorizontally { it / 4 }) togetherWith
                 (fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
-                slideOutHorizontally { -it / 4 })
-                using SizeTransform { _, targetSize -> targetSize }
+                slideOutHorizontally { -it / 4 }) using
+                SizeTransform { initialSize, targetSize ->
+                    tween(durationMillis = 200)
+                }
             },
             modifier = Modifier.weight(1f)
         ) { targetMode ->

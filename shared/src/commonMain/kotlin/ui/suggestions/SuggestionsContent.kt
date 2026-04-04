@@ -130,16 +130,17 @@ internal fun SuggestionsContent(
     }
     println("[SEQ 10] SuggestionsContent: START composition")
     
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            // FIX: Use weight(1f) instead of fillMaxHeight() for proper constraint handling in AnimatedContent
-            .weight(1f, fill = false)
-            .verticalScroll(rememberScrollState())
-            .debugConstraints("SuggestionsContent Column")
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
+    // FIX: Use BoxWithConstraints to get bounded height from parent, avoiding fillMaxHeight + verticalScroll issue
+    BoxWithConstraints(modifier = Modifier.fillMaxWidth().fillMaxHeight()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(max = maxHeight)
+                .verticalScroll(rememberScrollState())
+                .debugConstraints("SuggestionsContent Column")
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
         // Results section with animated visibility
         AnimatedVisibility(
             visible = isGenerating || currentSuggestion.isNotEmpty() || suggestions.isNotEmpty(),
@@ -349,4 +350,5 @@ internal fun SuggestionsContent(
             }
         }
     }
+}
 }
