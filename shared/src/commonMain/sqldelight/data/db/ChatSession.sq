@@ -29,3 +29,22 @@ WHERE id = :id;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+-- Data cleanup queries
+deleteSessionsBeforeDate:
+DELETE FROM chatSession
+WHERE updated_at < :before_timestamp;
+
+countSessions:
+SELECT COUNT(*) FROM chatSession;
+
+countSessionsBeforeDate:
+SELECT COUNT(*) FROM chatSession
+WHERE updated_at < :before_timestamp;
+
+countTotalMessages:
+SELECT COUNT(*) FROM chatMessage;
+
+deleteOrphanedMessages:
+DELETE FROM chatMessage
+WHERE session_id NOT IN (SELECT id FROM chatSession);

@@ -38,3 +38,16 @@ WHERE id = :id;
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+-- Data cleanup queries
+countMessagesForSession:
+SELECT COUNT(*) FROM chatMessage
+WHERE session_id = :session_id;
+
+deleteMessagesBeforeDate:
+DELETE FROM chatMessage
+WHERE timestamp < :before_timestamp;
+
+countMessagesBeforeDate:
+SELECT COUNT(*) FROM chatMessage
+WHERE timestamp < :before_timestamp;

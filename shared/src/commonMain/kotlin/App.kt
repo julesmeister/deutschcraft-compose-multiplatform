@@ -31,6 +31,7 @@ import ui.EditorPanel
 import ui.ChatPanelWithPersistence
 import ui.GrammarAnalysisPanel
 import ui.SettingsPanel
+import ui.data.DataManagementPanel
 import ui.suggestions.SuggestionsPanel
 import kotlinx.coroutines.*
 
@@ -58,7 +59,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
     DeutschCraftTheme(darkTheme = darkTheme) {
         var editorText by remember { mutableStateOf("") }
         var selectedText by remember { mutableStateOf("") }
-        var activeTab by remember { mutableStateOf(0) } // 0 = Editor, 1 = Chat, 2 = Analysis, 3 = Settings
+        var activeTab by remember { mutableStateOf(0) } // 0 = Editor, 1 = Chat, 2 = Analysis, 3 = Settings, 4 = Data
         var showRightPanel by remember { mutableStateOf(true) }
         var suggestionError by remember { mutableStateOf<String?>(null) }
         
@@ -106,6 +107,10 @@ fun App(driverFactory: DatabaseDriverFactory) {
                             modifier = Modifier.fillMaxSize()
                         )
                         3 -> SettingsPanel(
+                            driverFactory = driverFactory,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        4 -> DataManagementPanel(
                             driverFactory = driverFactory,
                             modifier = Modifier.fillMaxSize()
                         )
@@ -207,6 +212,15 @@ private fun ModeTabSelector(
                 label = "Settings",
                 isSelected = activeTab == 3,
                 onClick = { onTabSelected(3) },
+                modifier = Modifier.weight(1f)
+            )
+            
+            // Data Management Tab
+            TabButton(
+                icon = Icons.Default.Storage,
+                label = "Data",
+                isSelected = activeTab == 4,
+                onClick = { onTabSelected(4) },
                 modifier = Modifier.weight(1f)
             )
             

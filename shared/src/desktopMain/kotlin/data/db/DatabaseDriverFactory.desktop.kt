@@ -9,6 +9,7 @@ import data.settings.SettingsRepository
 import java.io.File
 
 actual class DatabaseDriverFactory {
+    actual val databaseManager: DatabaseManager by lazy { DatabaseManager(this) }
     actual val chatRepository: ChatRepository by lazy { SqlDelightChatRepository(createDriver()) }
     actual val settingsRepository: SettingsRepository by lazy { DesktopSettingsRepository() }
     

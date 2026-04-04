@@ -102,4 +102,30 @@ class GrammarMistakeRepository(driver: SqlDriver) {
         val recurring: Long,
         val byType: Map<ErrorType, Int>
     )
+
+    // Data cleanup methods
+    fun deleteMistakesBeforeDate(timestamp: Long): Long {
+        val count = queries.countMistakesBeforeDate(timestamp).executeAsOne() ?: 0L
+        queries.deleteMistakesBeforeDate(timestamp)
+        return count
+    }
+
+    fun deleteMistakesByType(errorType: ErrorType): Long {
+        val count = queries.selectMistakesByType(errorType.name, limit = 999999).executeAsList().size.toLong()
+        queries.deleteMistakesByType(errorType.name)
+        return count
+    }
+
+    fun countMistakesBeforeDate(timestamp: Long): Long {
+        return queries.countMistakesBeforeDate(timestamp).executeAsOne() ?: 0L
+    }
+
+    fun getStorageStats(): Triple<Long, Long, Long> {
+        val stats = queries.getStorageStats().executeAsOne()
+        return Triple(
+            stats.mistake_count ?: 0L,
+            stats.recurring_count ?: 0L,
+            stats.unique_types ?: 0L
+        )
+    }
 }

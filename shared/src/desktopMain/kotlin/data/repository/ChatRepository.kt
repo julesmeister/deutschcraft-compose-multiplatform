@@ -71,4 +71,25 @@ class SqlDelightChatRepository(driver: SqlDriver) : ChatRepository {
         val sessions = sessionQueries.selectAllSessions().executeAsList()
         return if (sessions.isNotEmpty()) sessions.first().id else createSession("Default Chat")
     }
+
+    // Data cleanup methods
+    suspend fun deleteSessionsBeforeDate(timestamp: Long): Long {
+        val count = sessionQueries.countSessionsBeforeDate(timestamp).executeAsOne() ?: 0L
+        sessionQueries.deleteSessionsBeforeDate(timestamp)
+        messageQueries.deleteOrphanedMessages()
+        return count
+    }
+
+    suspend fun deleteMessagesBeforeDate(timestamp: Long): Long {
+        val count = messageQueries.countMessagesBeforeDate(timestamp).executeAsOne() ?: 0L
+        messageQueries.deleteMessagesBeforeDate(timestamp)
+        return count
+    }
+
+    suspend fun getStorageStats(): Triple<Long, Long, Long> {
+        val sessions = sessionQueries.countSessions().executeAsOne() ?: 0L
+        val messages = sessionQueries.countTotalMessages().executeAsOne() ?: 0L
+        val orphaned = 0L // Would need a custom query for this
+        return Triple(sessions, messages, orphaned)
+    }
 }

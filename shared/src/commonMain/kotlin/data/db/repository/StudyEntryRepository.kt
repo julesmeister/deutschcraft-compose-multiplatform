@@ -74,4 +74,29 @@ class StudyEntryRepository(driver: SqlDriver) {
     fun getTotalWords(): Long {
         return queries.sumWordCount().executeAsOne() ?: 0L
     }
+
+    // Data cleanup methods
+    fun deleteEntriesBeforeDate(timestamp: Long): Long {
+        val count = countEntriesBeforeDate(timestamp)
+        queries.deleteEntriesBeforeDate(timestamp)
+        return count
+    }
+
+    fun deleteEntriesByTopic(topic: String): Long {
+        val count = countEntriesByTopic(topic)
+        queries.deleteEntriesByTopic(topic)
+        return count
+    }
+
+    fun countEntriesBeforeDate(timestamp: Long): Long {
+        return queries.countEntriesBeforeDate(timestamp).executeAsOne() ?: 0L
+    }
+
+    fun countEntriesByTopic(topic: String): Long {
+        return queries.countEntriesByTopic(topic).executeAsOne() ?: 0L
+    }
+
+    fun getOldestEntryDate(): Long? {
+        return queries.getOldestEntryDate().executeAsOne()
+    }
 }

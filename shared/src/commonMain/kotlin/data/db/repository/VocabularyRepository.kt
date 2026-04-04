@@ -91,4 +91,27 @@ class VocabularyRepository(driver: SqlDriver) {
         val progressPercentage: Int
             get() = if (totalWords > 0) (learnedWords * 100 / totalWords) else 0
     }
+
+    // Data cleanup methods
+    fun deleteLearnedVocabulary(): Long {
+        val count = queries.countLearned().executeAsOne()
+        queries.deleteLearnedVocabulary()
+        return count
+    }
+
+    fun deleteVocabularyBeforeDate(timestamp: Long): Long {
+        val count = queries.countVocabularyBeforeDate(timestamp).executeAsOne() ?: 0L
+        queries.deleteVocabularyBeforeDate(timestamp)
+        return count
+    }
+
+    fun countVocabularyBeforeDate(timestamp: Long): Long {
+        return queries.countVocabularyBeforeDate(timestamp).executeAsOne() ?: 0L
+    }
+
+    fun resetVocabulary(): Long {
+        val count = queries.countTotal().executeAsOne()
+        queries.resetVocabulary()
+        return count
+    }
 }

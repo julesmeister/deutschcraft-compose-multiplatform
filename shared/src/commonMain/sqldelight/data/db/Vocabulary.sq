@@ -47,3 +47,19 @@ SELECT COUNT(*) FROM vocabulary;
 
 countLearned:
 SELECT COUNT(*) FROM vocabulary WHERE is_learned = 1;
+
+-- Data cleanup queries
+deleteLearnedVocabulary:
+DELETE FROM vocabulary
+WHERE is_learned = 1;
+
+deleteVocabularyBeforeDate:
+DELETE FROM vocabulary
+WHERE first_seen < :before_timestamp;
+
+countVocabularyBeforeDate:
+SELECT COUNT(*) FROM vocabulary
+WHERE first_seen < :before_timestamp;
+
+resetVocabulary:
+DELETE FROM vocabulary;

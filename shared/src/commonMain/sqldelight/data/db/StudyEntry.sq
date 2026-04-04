@@ -41,3 +41,23 @@ SELECT COALESCE(SUM((LENGTH(content) + 1) / 2), 0) AS total_words FROM studyEntr
 
 lastInsertRowId:
 SELECT last_insert_rowid();
+
+-- Data cleanup queries
+deleteEntriesBeforeDate:
+DELETE FROM studyEntry
+WHERE timestamp < :before_timestamp;
+
+deleteEntriesByTopic:
+DELETE FROM studyEntry
+WHERE topic = :topic;
+
+countEntriesBeforeDate:
+SELECT COUNT(*) FROM studyEntry
+WHERE timestamp < :before_timestamp;
+
+countEntriesByTopic:
+SELECT COUNT(*) FROM studyEntry
+WHERE topic = :topic;
+
+getOldestEntryDate:
+SELECT MIN(timestamp) FROM studyEntry;
