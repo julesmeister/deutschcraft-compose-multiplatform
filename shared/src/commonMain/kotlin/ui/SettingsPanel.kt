@@ -22,9 +22,9 @@ import data.db.DatabaseDriverFactory
 import data.settings.FontSize
 import data.settings.SettingsRepository
 import data.settings.ThemeMode
-import data.settings.UserProfile
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import service.OllamaService
 import theme.Gray100
 import theme.Gray200
 import theme.Gray300
@@ -43,6 +43,7 @@ fun SettingsPanel(
 ) {
     val scope = rememberCoroutineScope()
     val settingsRepo = remember(driverFactory) { driverFactory.settingsRepository }
+    val ollamaService = remember { OllamaService() }
 
     // Settings state
     var themeMode by remember { mutableStateOf(ThemeMode.SYSTEM) }
@@ -53,8 +54,12 @@ fun SettingsPanel(
     var selectedModel by remember { mutableStateOf("llama3.2") }
     var dailyGoalMinutes by remember { mutableStateOf(15) }
     var notificationsEnabled by remember { mutableStateOf(true) }
+    
+    // Available models from Ollama
+    var availableModels by remember { mutableStateOf(listOf("llama3.2")) }
+    var isLoadingModels by remember { mutableStateOf(true) }
 
-    // Load settings
+    // Load settings and fetch models
     LaunchedEffect(Unit) {
         settingsRepo.themeMode.collect { themeMode = it }
     }
@@ -78,6 +83,17 @@ fun SettingsPanel(
     }
     LaunchedEffect(Unit) {
         settingsRepo.notificationsEnabled.collect { notificationsEnabled = it }
+    }
+    LaunchedEffect(Unit) {
+        isLoadingModels = true
+        try {
+            val models = ollamaService.getAvailableModels()
+            if (models.isNotEmpty()) {
+                availableModels = models
+            }
+        } finally {
+            isLoadingModels = false
+        }
     }
 
     Column(
@@ -183,6 +199,8 @@ fun SettingsPanel(
             ) {
                 ModelSelector(
                     selected = selectedModel,
+                    availableModels = availableModels,
+                    isLoading = isLoadingModels,
                     onSelect = {
                         scope.launch { settingsRepo.setSelectedModel(it) }
                     }
@@ -412,33 +430,47 @@ private fun FontSizeSelector(
 @Composable
 private fun ModelSelector(
     selected: String,
+    availableModels: List<String>,
+    isLoading: Boolean,
     onSelect: (String) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
-    val models = listOf("llama3.2", "llama3.1", "mistral", "gemma2")
 
     Box {
         Surface(
             color = Gray100,
             shape = RoundedCornerShape(8.dp),
-            modifier = Modifier.clickable { expanded = true }
+            modifier = Modifier.clickable(enabled = !isLoading) { expanded = true }
         ) {
             Row(
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = selected,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Gray800
-                )
-                Icon(
-                    imageVector = Icons.Default.ArrowDropDown,
-                    contentDescription = null,
-                    tint = Gray600,
-                    modifier = Modifier.size(20.dp)
-                )
+                if (isLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(16.dp),
+                        strokeWidth = 2.dp,
+                        color = Gray600
+                    )
+                    Text(
+                        text = "Loading...",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Gray600
+                    )
+                } else {
+                    Text(
+                        text = selected,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Gray800
+                    )
+                    Icon(
+                        imageVector = Icons.Default.ArrowDropDown,
+                        contentDescription = null,
+                        tint = Gray600,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
         }
 
@@ -446,7 +478,7 @@ private fun ModelSelector(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {
-            models.forEach { model ->
+            availableModels.forEach { model ->
                 DropdownMenuItem(
                     text = { Text(model) },
                     onClick = {
