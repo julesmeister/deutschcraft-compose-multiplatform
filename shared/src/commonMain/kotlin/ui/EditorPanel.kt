@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Spellcheck
 import androidx.compose.material3.*
@@ -32,6 +34,8 @@ fun EditorPanel(
     onTextChange: (String) -> Unit,
     onSelectionChange: (String) -> Unit,
     onAnalyzeClick: () -> Unit = {},
+    errorMessage: String? = null,
+    onErrorDismiss: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(text)) }

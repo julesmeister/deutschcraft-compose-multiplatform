@@ -121,13 +121,23 @@ fun App(driverFactory: DatabaseDriverFactory) {
                         selectedText = selectedText,
                         fullText = editorText,
                         onApplySuggestion = { suggestion ->
-                            editorText = suggestion
+                            // Only apply if suggestion is not empty and not an error message
+                            if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
+                                scope.launch {
+                                    editorText = suggestion
+                                }
+                            }
                         },
                         onAppendSuggestion = { suggestion ->
-                            editorText = if (editorText.endsWith(" ") || editorText.isEmpty()) {
-                                editorText + suggestion
-                            } else {
-                                editorText + " " + suggestion
+                            // Only append if suggestion is not empty and not an error message
+                            if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
+                                scope.launch {
+                                    editorText = if (editorText.endsWith(" ") || editorText.isEmpty()) {
+                                        editorText + suggestion
+                                    } else {
+                                        editorText + " " + suggestion
+                                    }
+                                }
                             }
                         },
                         modifier = Modifier.weight(1f)
