@@ -1,7 +1,18 @@
 package ui.suggestions
 
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.*
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -13,8 +24,11 @@ import kotlinx.coroutines.launch
 import service.OllamaService
 import data.settings.FontSize
 import theme.*
-import ui.ChatMessage
-import ui.components.m3.*
+import data.repository.ChatMessage
+import ui.chat.debugConstraints
+import ui.components.m3.M3IconBox
+import ui.suggestions.animations.PulsingIcon
+import ui.suggestions.animations.RotatingIcon
 
 enum class SuggestionsPanelMode {
     EDITOR,  // For text editing (grammar, improve, rephrase)
@@ -72,12 +86,14 @@ fun SuggestionsPanel(
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                M3IconBox(
-                    icon = if (mode == SuggestionsPanelMode.CHAT) Icons.Default.Chat else Icons.Default.Star,
-                    tint = Indigo,
-                    bg = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f),
-                    modifier = Modifier.size(36.dp)
-                )
+                PulsingIcon(modifier = Modifier.size(36.dp)) { mod ->
+                    M3IconBox(
+                        icon = if (mode == SuggestionsPanelMode.CHAT) Icons.Default.Chat else Icons.Default.Star,
+                        tint = Indigo,
+                        bg = androidx.compose.ui.graphics.Color.White.copy(alpha = 0.9f),
+                        modifier = mod
+                    )
+                }
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(
                     text = if (mode == SuggestionsPanelMode.CHAT) "Chat Assistant" else "AI Assistant",
@@ -89,77 +105,90 @@ fun SuggestionsPanel(
             }
         }
         
-        // Content Area
+        // Content Area with animated transitions
         val textToAnalyze = if (selectedText.isEmpty()) fullText else selectedText
         
-        if (mode == SuggestionsPanelMode.CHAT) {
-            // Chat mode content
-            if (chatMessages.isEmpty()) {
-                EmptyState(
-                    message = "Start a conversation to get AI assistance",
-                    fontSize = fontSize
-                )
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    // Auto-generated follow-up suggestions (shown when AI replies)
-                    if (autoSuggestions.isNotEmpty()) {
-                        AutoSuggestionsContent(
-                            suggestions = autoSuggestions,
+        AnimatedContent(
+            targetState = mode,
+            transitionSpec = {
+                fadeIn(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                slideInHorizontally { it / 4 } togetherWith
+                fadeOut(animationSpec = spring(stiffness = Spring.StiffnessMedium)) + 
+                slideOutHorizontally { -it / 4 }
+            },
+            modifier = Modifier.weight(1f)
+        ) { targetMode ->
+            when (targetMode) {
+                SuggestionsPanelMode.CHAT -> {
+                    println("[DEBUG COMPOSE] SuggestionsPanel CHAT mode - chatMessages.isEmpty()=${chatMessages.isEmpty()}")
+                    if (chatMessages.isEmpty()) {
+                        EmptyState(
+                            message = "Start a conversation to get AI assistance",
+                            fontSize = fontSize
+                        )
+                    } else {
+                        println("[DEBUG COMPOSE] About to create CHAT Column with verticalScroll")
+                        Column(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .verticalScroll(rememberScrollState())
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            // Auto-generated follow-up suggestions (shown when AI replies)
+                            if (autoSuggestions.isNotEmpty()) {
+                                AutoSuggestionsContent(
+                                    suggestions = autoSuggestions,
+                                    fontSize = fontSize,
+                                    onSuggestionClick = { suggestion ->
+                                        onAppendSuggestion(suggestion)
+                                    }
+                                )
+                            }
+                            
+                            // Manual suggestion results
+                            ChatSuggestionsContent(
+                                selectedText = selectedText,
+                                currentSuggestion = currentSuggestion,
+                                isGenerating = isGenerating,
+                                activeAction = activeAction,
+                                suggestions = suggestions,
+                                fontSize = fontSize,
+                                onApply = { onApplySuggestion(currentSuggestion) },
+                                onDismiss = {
+                                    currentSuggestion = ""
+                                    activeAction = null
+                                    suggestions = emptyList()
+                                }
+                            )
+                        }
+                    }
+                }
+                SuggestionsPanelMode.EDITOR -> {
+                    if (fullText.isEmpty()) {
+                        EmptyState(
+                            message = "Start writing in the editor to get AI suggestions",
+                            fontSize = fontSize
+                        )
+                    } else {
+                        SuggestionsContent(
+                            selectedText = textToAnalyze,
+                            isFullDocument = selectedText.isEmpty(),
+                            currentSuggestion = currentSuggestion,
+                            isGenerating = isGenerating,
+                            activeAction = activeAction,
+                            suggestions = suggestions,
                             fontSize = fontSize,
-                            onSuggestionClick = { suggestion ->
-                                // Copy suggestion to clipboard or input field
-                                onAppendSuggestion(suggestion)
+                            onApply = { onApplySuggestion(currentSuggestion) },
+                            onAppend = { suggestion -> onAppendSuggestion(suggestion) },
+                            onDismiss = { 
+                                currentSuggestion = ""
+                                activeAction = null
+                                suggestions = emptyList()
                             }
                         )
                     }
-                    
-                    // Manual suggestion results
-                    ChatSuggestionsContent(
-                        selectedText = selectedText,
-                        currentSuggestion = currentSuggestion,
-                        isGenerating = isGenerating,
-                        activeAction = activeAction,
-                        suggestions = suggestions,
-                        fontSize = fontSize,
-                        onApply = { onApplySuggestion(currentSuggestion) },
-                        onDismiss = {
-                            currentSuggestion = ""
-                            activeAction = null
-                            suggestions = emptyList()
-                        }
-                    )
                 }
-            }
-        } else {
-            // Editor mode content (original)
-            if (fullText.isEmpty()) {
-                EmptyState(
-                    message = "Start writing in the editor to get AI suggestions",
-                    fontSize = fontSize
-                )
-            } else {
-                SuggestionsContent(
-                    selectedText = textToAnalyze,
-                    isFullDocument = selectedText.isEmpty(),
-                    currentSuggestion = currentSuggestion,
-                    isGenerating = isGenerating,
-                    activeAction = activeAction,
-                    suggestions = suggestions,
-                    fontSize = fontSize,
-                    onApply = { onApplySuggestion(currentSuggestion) },
-                    onAppend = { onAppendSuggestion(currentSuggestion) },
-                    onDismiss = { 
-                        currentSuggestion = ""
-                        activeAction = null
-                        suggestions = emptyList()
-                    }
-                )
             }
         }
         

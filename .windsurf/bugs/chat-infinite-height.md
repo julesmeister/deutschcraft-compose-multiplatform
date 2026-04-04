@@ -37,14 +37,11 @@ Constraint-based debugging (custom LayoutModifier) does NOT catch the culprit be
 2. **SuggestionsContent.kt line 133** - `Column` with `verticalScroll` inside `AnimatedContent`
 3. Both have `verticalScroll` but don't get bounded constraints during animation transition
 
-## Debug Attempt 3: Composition Logging (FAILED)
-Added `println("[DEBUG COMPOSE]...")` at start of SuggestionsPanel CHAT mode branch.
-**Result:** Logs never appeared - crash happens BEFORE composition or in different code path.
-
-## Realization: AnimatedContent is the Culprit
-The `AnimatedContent` in `SuggestionsPanel` creates a transition container that temporarily provides **unbounded constraints** during the animation. The `verticalScroll` inside crashes because it receives infinite maxHeight during the transition.
-
-**Fix Strategy:** Remove `AnimatedContent` or disable its animation during tab switch.
+### Fix 3: Remove AnimatedContent (FAILED - REVERTED)
+- Replaced `AnimatedContent` with simple `Box` in SuggestionsPanel.kt
+- **Result:** Still crashed - AnimatedContent was NOT the culprit
+- **Action:** Reverted via git checkout
+- **Lesson:** The crash is NOT in SuggestionsPanel. Need to look elsewhere.
 
 ## Error Message
 ```
