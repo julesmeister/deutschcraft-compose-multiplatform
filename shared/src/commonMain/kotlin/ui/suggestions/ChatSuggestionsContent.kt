@@ -107,12 +107,12 @@ internal fun ChatSuggestionsContent(
             val isError = currentSuggestion.contains("failed", ignoreCase = true) || 
                           currentSuggestion.contains("error", ignoreCase = true)
             Surface(
-                color = if (isError) M3RedContainer else M3SurfaceContainer,
+                color = if (isError) colorScheme.errorContainer else colorScheme.surfaceContainer,
                 shape = MaterialTheme.shapes.small,
                 border = if (isError) 
-                    androidx.compose.foundation.BorderStroke(1.dp, M3RedColor.copy(alpha = 0.5f))
+                    androidx.compose.foundation.BorderStroke(1.dp, colorScheme.error.copy(alpha = 0.5f))
                 else 
-                    androidx.compose.foundation.BorderStroke(1.dp, M3Outline),
+                    androidx.compose.foundation.BorderStroke(1.dp, colorScheme.outline),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -127,7 +127,7 @@ internal fun ChatSuggestionsContent(
                     Text(
                         text = label,
                         style = MaterialTheme.typography.labelMedium.copy(fontSize = (baseFontSize * 0.875).sp),
-                        color = if (isError) M3RedColor else M3Primary,
+                        color = if (isError) colorScheme.error else colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -135,7 +135,7 @@ internal fun ChatSuggestionsContent(
                         text = currentSuggestion,
                         style = MaterialTheme.typography.bodyMedium.copy(
                             fontSize = baseFontSize.sp,
-                            color = if (isError) M3RedColor else M3OnSurface
+                            color = if (isError) colorScheme.error else colorScheme.onSurface
                         ),
                         typingDelayMs = 8,
                         modifier = Modifier.padding(vertical = 4.dp)
@@ -184,7 +184,7 @@ internal fun ChatSuggestionsContent(
                                     onClick = onRetry,
                                     modifier = Modifier.height(36.dp),
                                     colors = ButtonDefaults.buttonColors(
-                                        containerColor = M3RedColor,
+                                        containerColor = colorScheme.error,
                                         contentColor = Color.White
                                     )
                                 ) {
@@ -198,10 +198,10 @@ internal fun ChatSuggestionsContent(
                                 modifier = Modifier.height(36.dp),
                                 border = ButtonDefaults.outlinedButtonBorder.copy(
                                     width = 1.dp,
-                                    brush = androidx.compose.ui.graphics.SolidColor(M3Outline)
+                                    brush = androidx.compose.ui.graphics.SolidColor(colorScheme.outline)
                                 ),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = M3OnSurface
+                                    contentColor = colorScheme.onSurface
                                 )
                             ) {
                                 Text("Dismiss", fontSize = 14.sp)

@@ -49,11 +49,6 @@ import theme.Gray700
 import theme.Gray800
 import theme.Gray900
 import theme.Indigo
-import theme.IndigoLight
-import theme.Sage
-import theme.SageDark
-import theme.SageLight
-import theme.SageLighter
 
 /**
  * Data class representing a German character autocomplete suggestion.
@@ -113,7 +108,7 @@ fun checkForGermanSuggestion(
                 // Check that we're at a word boundary
                 val charAfterCursor = if (cursorPos < text.length) text[cursorPos] else '\u0000'
                 val isAtWordEnd = charAfterCursor == '\u0000' ||
-                    "\s,.-!?;:()[]{}" .contains(charAfterCursor)
+                    " \t,.-!?;:()[]{}" .contains(charAfterCursor)
 
                 if (isAtWordEnd) {
                     val triggerStart = cursorPos - triggerLength

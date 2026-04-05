@@ -162,7 +162,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
                                 onMarkWordAsLearned = { word ->
                                     scope.launch {
                                         // Manually mark as learned
-                                        vocabularyRepository.gradeWordAsLearned(word, autoLearnThreshold = 3)
+                                        vocabularyRepository.gradeWordAsLearned(word, 3)
                                         // Refresh the list
                                         difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
                                     }
