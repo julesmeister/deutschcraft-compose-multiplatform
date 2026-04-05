@@ -2,13 +2,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
-import androidx.compose.material.icons.automirrored.filled.MenuOpen
-import androidx.compose.material.icons.filled.Assessment
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +10,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import data.db.DatabaseDriverFactory
+import data.db.repository.VocabularyRepository
+import data.model.VocabularyItem
 import data.repository.ChatMessage
 import data.repository.EssayDraft
 import data.settings.ThemeMode
@@ -33,7 +28,9 @@ import ui.EditorPanel
 import ui.chat.debugConstraints
 import ui.ChatPanelWithPersistence
 import ui.GrammarAnalysisPanel
+import ui.ModeTabSelector
 import ui.SettingsPanel
+import ui.TabButton
 import ui.suggestions.SuggestionsPanel
 import ui.suggestions.SuggestionsPanelMode
 import kotlinx.coroutines.*
@@ -70,6 +67,17 @@ fun App(driverFactory: DatabaseDriverFactory) {
         var chatAutoSuggestions by remember { mutableStateOf(listOf<String>()) }
         var suggestionError by remember { mutableStateOf<String?>(null) }
         
+        // Difficult words state
+        var difficultWords by remember { mutableStateOf(listOf<VocabularyItem>()) }
+        val vocabularyRepository = remember(driverFactory) { VocabularyRepository(driverFactory.createDriver()) }
+        
+        // Load difficult words when needed
+        LaunchedEffect(activeTab, editorText) {
+            if (activeTab == 0 && editorText.length > 20) {
+                difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
+            }
+        }
+        
         // Essay state
         var currentEssayId by remember { mutableStateOf<Long?>(null) }
         var currentEssayTitle by remember { mutableStateOf<String?>(null) }
@@ -100,7 +108,7 @@ fun App(driverFactory: DatabaseDriverFactory) {
                     HorizontalDivider(color = Gray200)
                     
                     // Content based on selected tab - fills remaining space
-                    Box(modifier = Modifier.weight(1f).fillMaxWidth().debugConstraints("App.kt Content Box")) {
+                    Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
                         when (activeTab) {
                             0 -> EditorPanel(
                                 text = editorText,
@@ -124,6 +132,41 @@ fun App(driverFactory: DatabaseDriverFactory) {
                                         showSaveEssayDialog = true
                                     }
                                 },
+                                difficultWords = difficultWords,
+                                onWordSelected = { word ->
+                                    // Word was selected from suggestion
+                                    scope.launch {
+                                        // Record practice attempt and check if auto-learned
+                                        val autoLearned = vocabularyRepository.recordPractice(word)
+                                        if (autoLearned) {
+                                            // Refresh the list - word will be filtered out as it's now learned
+                                            difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
+                                        }
+                                    }
+                                },
+                                onDismissDifficultWords = { 
+                                    // User dismissed the suggestion
+                                },
+                                onWordPracticed = { word ->
+                                    scope.launch {
+                                        val autoLearned = vocabularyRepository.recordPractice(word)
+                                        if (autoLearned) {
+                                            // Word was auto-marked as learned, refresh list
+                                            difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
+                                        } else {
+                                            // Just refresh to show updated practice count
+                                            difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
+                                        }
+                                    }
+                                },
+                                onMarkWordAsLearned = { word ->
+                                    scope.launch {
+                                        // Manually mark as learned
+                                        vocabularyRepository.gradeWordAsLearned(word, autoLearnThreshold = 3)
+                                        // Refresh the list
+                                        difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
+                                    }
+                                },
                                 modifier = Modifier.fillMaxSize()
                             )
                             1 -> ChatPanelWithPersistence(
@@ -135,6 +178,16 @@ fun App(driverFactory: DatabaseDriverFactory) {
                                 onAutoSuggestionsChange = { chatAutoSuggestions = it },
                                 suggestedTitle = chatTitleSuggestion,
                                 onTitleApplied = { chatTitleSuggestion = null },
+                                difficultWords = difficultWords,
+                                onDifficultWordSelected = { word ->
+                                    scope.launch {
+                                        val autoLearned = vocabularyRepository.recordPractice(word)
+                                        if (autoLearned) {
+                                            difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
+                                        }
+                                    }
+                                },
+                                onDismissDifficultWords = { },
                                 modifier = Modifier.fillMaxSize()
                             )
                             2 -> GrammarAnalysisPanel(
@@ -284,115 +337,6 @@ fun App(driverFactory: DatabaseDriverFactory) {
                         Text("Cancel")
                     }
                 }
-            )
-        }
-    }
-}
-
-@Composable
-private fun ModeTabSelector(
-    activeTab: Int,
-    onTabSelected: (Int) -> Unit,
-    showRightPanel: Boolean = true,
-    onToggleRightPanel: () -> Unit = {}
-) {
-    Surface(
-        color = Gray50,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Editor Tab
-            TabButton(
-                icon = Icons.Default.Edit,
-                label = "Editor",
-                isSelected = activeTab == 0,
-                onClick = { onTabSelected(0) },
-                modifier = Modifier.weight(1f)
-            )
-            
-            // Chat Tab
-            TabButton(
-                icon = Icons.AutoMirrored.Filled.Chat,
-                label = "Chat",
-                isSelected = activeTab == 1,
-                onClick = { onTabSelected(1) },
-                modifier = Modifier.weight(1f)
-            )
-            
-            // Analysis Tab
-            TabButton(
-                icon = Icons.Default.Assessment,
-                label = "Analysis",
-                isSelected = activeTab == 2,
-                onClick = { onTabSelected(2) },
-                modifier = Modifier.weight(1f)
-            )
-            
-            // Settings Tab
-            TabButton(
-                icon = Icons.Default.Settings,
-                label = "Settings",
-                isSelected = activeTab == 3,
-                onClick = { onTabSelected(3) },
-                modifier = Modifier.weight(1f)
-            )
-            
-            // Right panel toggle button
-            IconButton(
-                onClick = onToggleRightPanel,
-                modifier = Modifier.size(36.dp)
-            ) {
-                Icon(
-                    imageVector = if (showRightPanel) Icons.Default.Menu else Icons.AutoMirrored.Filled.MenuOpen,
-                    contentDescription = if (showRightPanel) "Hide suggestions" else "Show suggestions",
-                    tint = Gray600,
-                    modifier = Modifier.size(22.dp)
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun TabButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
-    label: String,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    val backgroundColor = if (isSelected) Indigo else Gray100
-    val contentColor = if (isSelected) androidx.compose.ui.graphics.Color.White else Gray700
-    
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(20.dp))
-            .background(backgroundColor)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = contentColor,
-                modifier = Modifier.size(18.dp)
-            )
-            Text(
-                text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = contentColor,
-                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Medium
             )
         }
     }

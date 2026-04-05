@@ -2,6 +2,7 @@ package ui
 
 import androidx.compose.runtime.*
 import data.db.DatabaseDriverFactory
+import data.model.VocabularyItem
 import data.repository.ChatMessage
 import data.repository.ChatSession
 import data.settings.FontSize
@@ -19,6 +20,9 @@ fun ChatPanelWithPersistence(
     onAutoSuggestionsChange: (List<String>) -> Unit = {},
     suggestedTitle: String? = null,
     onTitleApplied: () -> Unit = {},
+    difficultWords: List<VocabularyItem> = emptyList(),
+    onDifficultWordSelected: (String) -> Unit = {},
+    onDismissDifficultWords: () -> Unit = {},
     modifier: androidx.compose.ui.Modifier = androidx.compose.ui.Modifier
 ) {
     val scope = rememberCoroutineScope()
@@ -167,6 +171,9 @@ fun ChatPanelWithPersistence(
         onTextSelected = onSelectionChange,
         onShowDeleteConfirmation = { id, msg -> showDeleteConfirmation(id, msg) },
         fontSize = fontSize,
+        difficultWords = difficultWords,
+        onDifficultWordSelected = onDifficultWordSelected,
+        onDismissDifficultWords = onDismissDifficultWords,
         modifier = modifier
     )
 }

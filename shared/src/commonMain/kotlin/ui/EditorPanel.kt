@@ -10,10 +10,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import data.model.VocabularyItem
 import theme.*
 import ui.editor.EditorStatusBar
 import ui.editor.EditorToolbar
 import ui.editor.ErrorBanner
+import ui.suggestions.DifficultWordsSuggestion
+import ui.suggestions.shouldSuggestDifficultWords
 
 @Composable
 fun EditorPanel(
@@ -27,11 +30,18 @@ fun EditorPanel(
     currentEssayTitle: String? = null,
     onOpenEssay: () -> Unit = {},
     onSaveEssay: () -> Unit = {},
+    difficultWords: List<VocabularyItem> = emptyList(),
+    onWordSelected: (String) -> Unit = {},
+    onDismissDifficultWords: () -> Unit = {},
+    onWordPracticed: (String) -> Unit = {},
+    onMarkWordAsLearned: (String) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(text)) }
     var wordCount by remember { mutableIntStateOf(0) }
     var charCount by remember { mutableIntStateOf(0) }
+    var showDifficultWords by remember { mutableStateOf(false) }
+    var lastSuggestionTime by remember { mutableStateOf<Long?>(null) }
     
     // Update local state when external text changes
     LaunchedEffect(text) {
@@ -43,6 +53,17 @@ fun EditorPanel(
     LaunchedEffect(textFieldValue.text) {
         wordCount = textFieldValue.text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.size
         charCount = textFieldValue.text.length
+        
+        // Check if we should suggest difficult words
+        if (shouldSuggestDifficultWords(
+            textLength = charCount,
+            wordCount = wordCount,
+            difficultWordCount = difficultWords.size,
+            lastSuggestionTime = lastSuggestionTime
+        )) {
+            showDifficultWords = true
+            lastSuggestionTime = System.currentTimeMillis()
+        }
     }
     
     // Report selection changes
@@ -66,6 +87,7 @@ fun EditorPanel(
             onClearClick = { 
                 textFieldValue = TextFieldValue("")
                 onTextChange("")
+                showDifficultWords = false
             },
             onRefreshClick = { /* Refresh action */ },
             onOpenClick = onOpenEssay,
@@ -137,6 +159,35 @@ fun EditorPanel(
                         innerTextField()
                     }
                 }
+            )
+        }
+        
+        // Difficult words suggestion (shown above error banner when appropriate)
+        if (showDifficultWords && difficultWords.isNotEmpty()) {
+            DifficultWordsSuggestion(
+                difficultWords = difficultWords,
+                onWordSelected = { word ->
+                    onWordSelected(word)
+                    // Insert the word at cursor position
+                    val currentText = textFieldValue.text
+                    val selection = textFieldValue.selection
+                    val before = currentText.substring(0, selection.start)
+                    val after = currentText.substring(selection.end)
+                    val newText = "$before$word$after"
+                    textFieldValue = TextFieldValue(
+                        text = newText,
+                        selection = androidx.compose.ui.text.TextRange(selection.start + word.length)
+                    )
+                    onTextChange(newText)
+                },
+                onDismiss = {
+                    showDifficultWords = false
+                    onDismissDifficultWords()
+                },
+                onWordPracticed = onWordPracticed,
+                onMarkAsLearned = onMarkWordAsLearned,
+                fontSize = fontSize,
+                isVisible = showDifficultWords
             )
         }
         

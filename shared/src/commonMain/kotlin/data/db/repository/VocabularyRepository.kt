@@ -17,7 +17,8 @@ class VocabularyRepository(driver: SqlDriver) {
         word: String,
         context: String,
         translation: String?,
-        difficulty: CefrLevel
+        difficulty: CefrLevel,
+        isUserDifficult: Boolean = false
     ) {
         val now = System.currentTimeMillis()
         val existing = queries.selectVocabularyByWord(word).executeAsOneOrNull()
@@ -30,7 +31,10 @@ class VocabularyRepository(driver: SqlDriver) {
                 difficulty = difficulty.name,
                 first_seen = now,
                 encounter_count = 1,
-                is_learned = 0L
+                is_learned = 0L,
+                is_user_difficult = if (isUserDifficult) 1L else 0L,
+                practice_count = 0L,
+                last_practiced = null
             )
         } else {
             queries.incrementEncounter(
@@ -56,7 +60,10 @@ class VocabularyRepository(driver: SqlDriver) {
                     difficulty = CefrLevel.valueOf(row.difficulty),
                     firstSeen = Instant.fromEpochMilliseconds(row.first_seen),
                     encounterCount = row.encounter_count.toInt(),
-                    isLearned = row.is_learned == 1L
+                    isLearned = row.is_learned == 1L,
+                    isUserMarkedDifficult = row.is_user_difficult == 1L,
+                    practiceCount = row.practice_count.toInt(),
+                    lastPracticed = row.last_practiced?.let { Instant.fromEpochMilliseconds(it) }
                 )
             }
     }
@@ -73,10 +80,87 @@ class VocabularyRepository(driver: SqlDriver) {
                     difficulty = CefrLevel.valueOf(row.difficulty),
                     firstSeen = Instant.fromEpochMilliseconds(row.first_seen),
                     encounterCount = row.encounter_count.toInt(),
-                    isLearned = row.is_learned == 1L
+                    isLearned = row.is_learned == 1L,
+                    isUserMarkedDifficult = row.is_user_difficult == 1L,
+                    practiceCount = row.practice_count.toInt(),
+                    lastPracticed = row.last_practiced?.let { Instant.fromEpochMilliseconds(it) }
                 )
             }
     }
+    
+    fun markAsDifficult(word: String) {
+        queries.markAsDifficult(word)
+    }
+    
+    fun unmarkAsDifficult(word: String) {
+        queries.unmarkAsDifficult(word)
+    }
+    
+    fun getDifficultWords(limit: Long = 10): List<VocabularyItem> {
+        return queries.selectUserDifficultWords(limit)
+            .executeAsList()
+            .map { row ->
+                VocabularyItem(
+                    id = row.id,
+                    word = row.word,
+                    context = row.context,
+                    translation = row.translation,
+                    difficulty = CefrLevel.valueOf(row.difficulty),
+                    firstSeen = Instant.fromEpochMilliseconds(row.first_seen),
+                    encounterCount = row.encounter_count.toInt(),
+                    isLearned = row.is_learned == 1L,
+                    isUserMarkedDifficult = row.is_user_difficult == 1L,
+                    practiceCount = row.practice_count.toInt(),
+                    lastPracticed = row.last_practiced?.let { Instant.fromEpochMilliseconds(it) }
+                )
+            }
+    }
+    
+    fun countDifficultWords(): Long {
+        return queries.countUserDifficultWords().executeAsOne()
+    }
+    
+    /**
+     * Records a practice attempt for a word.
+     * If the word has been practiced enough times (default: 3), it will be marked as learned.
+     * @return true if the word was auto-marked as learned, false otherwise
+     */
+    fun recordPractice(word: String, autoLearnThreshold: Int = 3): Boolean {
+        val timestamp = System.currentTimeMillis()
+        queries.recordPractice(timestamp, word)
+        
+        // Check if we should auto-mark as learned
+        val stats = queries.getWordPracticeStats(word).executeAsOneOrNull()
+        if (stats != null && stats.practice_count >= autoLearnThreshold) {
+            queries.markAsLearnedWithPractice(stats.practice_count, word)
+            return true
+        }
+        return false
+    }
+    
+    /**
+     * Gets practice statistics for a word.
+     */
+    fun getPracticeStats(word: String): PracticeStats? {
+        return queries.getWordPracticeStats(word).executeAsOneOrNull()?.let {
+            PracticeStats(
+                practiceCount = it.practice_count.toInt(),
+                lastPracticed = it.last_practiced?.let { Instant.fromEpochMilliseconds(it) }
+            )
+        }
+    }
+    
+    /**
+     * Manually grades a word as learned with a specific practice count.
+     */
+    fun gradeWordAsLearned(word: String, practiceCount: Int) {
+        queries.markAsLearnedWithPractice(practiceCount.toLong(), word)
+    }
+    
+    data class PracticeStats(
+        val practiceCount: Int,
+        val lastPracticed: Instant?
+    )
     
     fun getStats(): VocabularyStats {
         val total = queries.countTotal().executeAsOne()

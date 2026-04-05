@@ -6,12 +6,17 @@ CREATE TABLE vocabulary (
     difficulty TEXT NOT NULL,
     first_seen INTEGER NOT NULL,
     encounter_count INTEGER NOT NULL DEFAULT 1,
-    is_learned INTEGER NOT NULL DEFAULT 0
+    is_learned INTEGER NOT NULL DEFAULT 0,
+    is_user_difficult INTEGER NOT NULL DEFAULT 0,
+    practice_count INTEGER NOT NULL DEFAULT 0,
+    last_practiced INTEGER
 );
 
 CREATE INDEX idx_vocabulary_word ON vocabulary(word);
 CREATE INDEX idx_vocabulary_difficulty ON vocabulary(difficulty);
 CREATE INDEX idx_vocabulary_learned ON vocabulary(is_learned);
+CREATE INDEX idx_vocabulary_user_difficult ON vocabulary(is_user_difficult);
+CREATE INDEX idx_vocabulary_practice ON vocabulary(practice_count);
 
 selectVocabularyByWord:
 SELECT * FROM vocabulary WHERE word = :word;
@@ -29,8 +34,43 @@ ORDER BY encounter_count DESC, first_seen DESC
 LIMIT :limit;
 
 insertVocabulary:
-INSERT INTO vocabulary(word, context, translation, difficulty, first_seen, encounter_count, is_learned)
-VALUES (:word, :context, :translation, :difficulty, :first_seen, :encounter_count, :is_learned);
+INSERT INTO vocabulary(word, context, translation, difficulty, first_seen, encounter_count, is_learned, is_user_difficult, practice_count, last_practiced)
+VALUES (:word, :context, :translation, :difficulty, :first_seen, :encounter_count, :is_learned, :is_user_difficult, :practice_count, :last_practiced);
+
+selectUserDifficultWords:
+SELECT * FROM vocabulary
+WHERE is_user_difficult = 1 AND is_learned = 0
+ORDER BY practice_count ASC, encounter_count DESC, first_seen DESC
+LIMIT :limit;
+
+markAsDifficult:
+UPDATE vocabulary
+SET is_user_difficult = 1
+WHERE word = :word;
+
+unmarkAsDifficult:
+UPDATE vocabulary
+SET is_user_difficult = 0
+WHERE word = :word;
+
+countUserDifficultWords:
+SELECT COUNT(*) FROM vocabulary WHERE is_user_difficult = 1 AND is_learned = 0;
+
+recordPractice:
+UPDATE vocabulary
+SET practice_count = practice_count + 1,
+    last_practiced = :timestamp
+WHERE word = :word;
+
+markAsLearnedWithPractice:
+UPDATE vocabulary
+SET is_learned = 1,
+    is_user_difficult = 0,
+    practice_count = :practice_count
+WHERE word = :word;
+
+getWordPracticeStats:
+SELECT practice_count, last_practiced FROM vocabulary WHERE word = :word;
 
 incrementEncounter:
 UPDATE vocabulary

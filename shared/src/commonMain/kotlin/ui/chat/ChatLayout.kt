@@ -13,6 +13,7 @@ import ui.SessionSidebar
 import ui.ChatHeader
 import ui.ChatInputArea
 import ui.components.m3.DCConfirmDialog
+import data.model.VocabularyItem
 import data.repository.ChatMessage
 import data.repository.ChatSession
 import data.settings.FontSize
@@ -45,6 +46,9 @@ internal fun ChatLayout(
     onTextSelected: (String) -> Unit,
     onShowDeleteConfirmation: (Long, String) -> Unit,
     fontSize: FontSize,
+    difficultWords: List<VocabularyItem> = emptyList(),
+    onDifficultWordSelected: (String) -> Unit = {},
+    onDismissDifficultWords: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     // DEBUG: Log when ChatLayout starts composing
@@ -93,6 +97,9 @@ internal fun ChatLayout(
             onRegenerateMessage = onRegenerateMessage,
             onTextSelected = onTextSelected,
             onShowDeleteConfirmation = onShowDeleteConfirmation,
+            difficultWords = difficultWords,
+            onDifficultWordSelected = onDifficultWordSelected,
+            onDismissDifficultWords = onDismissDifficultWords,
             fontSize = fontSize
         )
     }
@@ -125,6 +132,9 @@ private fun ChatMainArea(
     onRegenerateMessage: (Long) -> Unit,
     onTextSelected: (String) -> Unit,
     onShowDeleteConfirmation: (Long, String) -> Unit,
+    difficultWords: List<VocabularyItem>,
+    onDifficultWordSelected: (String) -> Unit,
+    onDismissDifficultWords: () -> Unit,
     fontSize: FontSize
 ) {
     // ═════════════════════════════════════════════════════════════════════════════
@@ -158,6 +168,24 @@ private fun ChatMainArea(
             connectionStatus = "Connected",
             isGenerating = isGenerating
         )
+
+        // ─────────────────────────────────────────────────────────────────────────────
+        // SUBSECTION: Difficult Words Suggestion (shown when appropriate)
+        // ─────────────────────────────────────────────────────────────────────────────
+        if (difficultWords.isNotEmpty() && messages.isNotEmpty()) {
+            ui.suggestions.DifficultWordsSuggestion(
+                difficultWords = difficultWords,
+                onWordSelected = { word ->
+                    onDifficultWordSelected(word)
+                    // Append word to input
+                    onInputChange(if (inputText.isEmpty()) word else "$inputText $word")
+                },
+                onDismiss = onDismissDifficultWords,
+                fontSize = fontSize,
+                isVisible = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
 
         // ─────────────────────────────────────────────────────────────────────────────
         // SUBSECTION: Chat Messages List (LazyColumn with weight)

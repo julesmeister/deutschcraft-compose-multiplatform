@@ -103,5 +103,8 @@ data class VocabularyItem(
     val difficulty: CefrLevel,
     val firstSeen: Instant,
     val encounterCount: Int = 1,
-    val isLearned: Boolean = false
+    val isLearned: Boolean = false,
+    val isUserMarkedDifficult: Boolean = false,
+    val practiceCount: Int = 0,
+    val lastPracticed: Instant? = null
 )

@@ -63,8 +63,10 @@ fun SuggestionsPanel(
     }
     
     // Auto-translate when a word is selected from chat (only in CHAT mode)
+    // Use a separate key to force re-trigger when selectedText changes
     LaunchedEffect(selectedText, mode) {
-        if (mode == SuggestionsPanelMode.CHAT && selectedText.isNotBlank() && !isGenerating) {
+        if (mode == SuggestionsPanelMode.CHAT && selectedText.isNotBlank()) {
+            println("[AutoTranslate] Starting translation for: $selectedText")
             activeAction = "translate"
             isGenerating = true
             currentSuggestion = ""
@@ -75,11 +77,12 @@ fun SuggestionsPanel(
                     context = "",
                     model = selectedModel
                 )
+                println("[AutoTranslate] Got translation: ${translation.take(50)}...")
                 currentSuggestion = translation
             } catch (e: Exception) {
                 val errorMsg = e.message ?: "Unknown error"
-                currentSuggestion = "Error: $errorMsg"
-                onError(errorMsg)
+                println("[AutoTranslate] Error: $errorMsg")
+                currentSuggestion = "Translation failed: $errorMsg"
             } finally {
                 isGenerating = false
             }
@@ -191,7 +194,8 @@ fun SuggestionsPanel(
                                 currentSuggestion = ""
                                 activeAction = null
                                 suggestions = emptyList()
-                            }
+                            },
+                            onRetry = chatActions.onTranslate
                         )
                     }
                 }
@@ -268,7 +272,8 @@ private fun ChatModeContent(
     fontSize: FontSize,
     onAppendSuggestion: (String) -> Unit,
     onApplySuggestion: (String) -> Unit,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onRetry: () -> Unit
 ) {
     Box(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -295,7 +300,8 @@ private fun ChatModeContent(
                 suggestions = suggestions,
                 fontSize = fontSize,
                 onApply = { onApplySuggestion(currentSuggestion) },
-                onDismiss = onDismiss
+                onDismiss = onDismiss,
+                onRetry = onRetry
             )
         }
     }
