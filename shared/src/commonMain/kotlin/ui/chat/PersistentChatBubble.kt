@@ -21,6 +21,7 @@ import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.offset
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Delete
@@ -51,9 +52,12 @@ internal fun PersistentChatBubble(
 
     // Scale text based on font size setting
     val textStyle = when (fontSize) {
+        FontSize.EXTRA_SMALL -> typography.bodySmall.copy(fontSize = 12.sp)
         FontSize.SMALL -> typography.bodySmall
         FontSize.MEDIUM -> typography.bodyMedium
         FontSize.LARGE -> typography.bodyLarge
+        FontSize.EXTRA_LARGE -> typography.bodyLarge.copy(fontSize = 24.sp)
+        FontSize.HUGE -> typography.bodyLarge.copy(fontSize = 28.sp)
     }
 
     Column(

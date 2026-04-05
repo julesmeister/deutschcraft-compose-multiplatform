@@ -5,5 +5,5 @@ enum class ThemeMode {
 }
 
 enum class FontSize {
-    SMALL, MEDIUM, LARGE
+    EXTRA_SMALL, SMALL, MEDIUM, LARGE, EXTRA_LARGE, HUGE
 }

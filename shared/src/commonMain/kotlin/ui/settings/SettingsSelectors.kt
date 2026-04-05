@@ -73,15 +73,21 @@ fun FontSizeSelector(
             ) {
                 Text(
                     text = when (size) {
-                        FontSize.SMALL -> "A"
-                        FontSize.MEDIUM -> "A+"
-                        FontSize.LARGE -> "A++"
+                        FontSize.EXTRA_SMALL -> "XS"
+                        FontSize.SMALL -> "S"
+                        FontSize.MEDIUM -> "M"
+                        FontSize.LARGE -> "L"
+                        FontSize.EXTRA_LARGE -> "XL"
+                        FontSize.HUGE -> "XXL"
                     },
                     style = MaterialTheme.typography.labelMedium.copy(
                         fontSize = when (size) {
+                            FontSize.EXTRA_SMALL -> 10.sp
                             FontSize.SMALL -> 12.sp
                             FontSize.MEDIUM -> 14.sp
                             FontSize.LARGE -> 16.sp
+                            FontSize.EXTRA_LARGE -> 18.sp
+                            FontSize.HUGE -> 20.sp
                         }
                     ),
                     color = if (isSelected) Color.White else Gray700,

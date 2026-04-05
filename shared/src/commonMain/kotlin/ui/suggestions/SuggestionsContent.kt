@@ -45,9 +45,12 @@ internal fun AutoSuggestionsContent(
     onSuggestionClick: (String) -> Unit,
 ) {
     val baseFontSize = when (fontSize) {
+        FontSize.EXTRA_SMALL -> 12f
         FontSize.SMALL -> 14f
         FontSize.MEDIUM -> 16f
         FontSize.LARGE -> 20f
+        FontSize.EXTRA_LARGE -> 24f
+        FontSize.HUGE -> 28f
     }
 
     Card(
@@ -124,9 +127,12 @@ internal fun SuggestionsContent(
 ) {
     // Convert FontSize enum to base sp value
     val baseFontSize = when (fontSize) {
+        FontSize.EXTRA_SMALL -> 12f
         FontSize.SMALL -> 14f
         FontSize.MEDIUM -> 16f
         FontSize.LARGE -> 20f
+        FontSize.EXTRA_LARGE -> 24f
+        FontSize.HUGE -> 28f
     }
     println("[SEQ 10] SuggestionsContent: START composition")
     

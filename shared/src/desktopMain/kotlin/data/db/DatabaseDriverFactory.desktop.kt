@@ -20,10 +20,8 @@ actual class DatabaseDriverFactory {
         val databasePath = getDatabasePath()
         val driver = JdbcSqliteDriver("jdbc:sqlite:$databasePath")
         
-        // Create schema if needed
-        if (!File(databasePath).exists()) {
-            StudyDatabaseSqlDelight.Schema.create(driver)
-        }
+        // Always ensure schema is up to date (uses CREATE TABLE IF NOT EXISTS)
+        StudyDatabaseSqlDelight.Schema.create(driver)
         
         return driver
     }

@@ -82,13 +82,16 @@ class ChatSendMessageUseCase(
     private fun generateFollowUpSuggestions(messages: List<ChatMessage>) {
         scope.launch {
             try {
+                println("[DEBUG] generateFollowUpSuggestions START")
                 val followUpSuggestions = ollamaService.suggestUserResponses(
                     messages = messages,
                     model = selectedModel()
                 )
+                println("[DEBUG] generateFollowUpSuggestions got: $followUpSuggestions")
                 onAutoSuggestionsChange(followUpSuggestions)
+                println("[DEBUG] generateFollowUpSuggestions callback invoked")
             } catch (e: Exception) {
-                // Silently fail - suggestions are not critical
+                println("[DEBUG] generateFollowUpSuggestions ERROR: ${e.message}")
                 onAutoSuggestionsChange(emptyList())
             }
         }

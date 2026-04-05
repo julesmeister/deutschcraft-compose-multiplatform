@@ -105,9 +105,12 @@ internal fun NoDataPlaceholder(
         )
         Spacer(modifier = Modifier.height(16.dp))
         val textSize = when (fontSize) {
+            FontSize.EXTRA_SMALL -> 12.sp
             FontSize.SMALL -> 14.sp
             FontSize.MEDIUM -> 16.sp
             FontSize.LARGE -> 20.sp
+            FontSize.EXTRA_LARGE -> 24.sp
+            FontSize.HUGE -> 28.sp
         }
         Text(
             text = message,
@@ -130,9 +133,12 @@ internal fun ChatSuggestionsContent(
     onDismiss: () -> Unit
 ) {
     val baseFontSize = when (fontSize) {
+        FontSize.EXTRA_SMALL -> 12f
         FontSize.SMALL -> 14f
         FontSize.MEDIUM -> 16f
         FontSize.LARGE -> 20f
+        FontSize.EXTRA_LARGE -> 24f
+        FontSize.HUGE -> 28f
     }
     
     println("[SEQ 9] ChatSuggestionsContent: START composition")

@@ -453,12 +453,18 @@ Provide exactly 3 brief response suggestions in German, numbered 1., 2., 3. Each
         
         val response = generateRawResponse(prompt, model, maxTokens = 120)
         
-        return response.lines()
+        println("[DEBUG] suggestUserResponses raw response: $response")
+        
+        val parsed = response.lines()
             .filter { it.trim().matches(Regex("^\\d+[.\\)]\\s+.+")) }
             .map { it.replace(Regex("^\\d+[.\\)]\\s*"), "").trim() }
             .filter { it.isNotEmpty() }
             .takeIf { it.isNotEmpty() }
             ?: emptyList()
+        
+        println("[DEBUG] suggestUserResponses parsed: $parsed")
+        
+        return parsed
     }
 
     /**

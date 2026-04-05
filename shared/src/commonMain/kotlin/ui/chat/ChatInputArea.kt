@@ -8,7 +8,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Send
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -53,9 +53,12 @@ internal fun ChatInputArea(
                     .heightIn(min = 48.dp, max = 120.dp),
                 textStyle = TextStyle(
                     fontSize = when (fontSize) {
+                        data.settings.FontSize.EXTRA_SMALL -> 12.sp
                         data.settings.FontSize.SMALL -> 14.sp
                         data.settings.FontSize.MEDIUM -> 16.sp
                         data.settings.FontSize.LARGE -> 20.sp
+                        data.settings.FontSize.EXTRA_LARGE -> 24.sp
+                        data.settings.FontSize.HUGE -> 28.sp
                     },
                     color = Gray800
                 ),
@@ -74,9 +77,12 @@ internal fun ChatInputArea(
                             Text(
                                 text = "Ask AI about your writing...",
                                 fontSize = when (fontSize) {
+                                    data.settings.FontSize.EXTRA_SMALL -> 12.sp
                                     data.settings.FontSize.SMALL -> 14.sp
                                     data.settings.FontSize.MEDIUM -> 16.sp
                                     data.settings.FontSize.LARGE -> 20.sp
+                                    data.settings.FontSize.EXTRA_LARGE -> 24.sp
+                                    data.settings.FontSize.HUGE -> 28.sp
                                 },
                                 color = Gray400
                             )

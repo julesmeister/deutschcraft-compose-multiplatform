@@ -90,14 +90,20 @@ fun EditorPanel(
                 modifier = Modifier.fillMaxSize(),
                 textStyle = TextStyle(
                     fontSize = when (fontSize) {
+                        data.settings.FontSize.EXTRA_SMALL -> 12.sp
                         data.settings.FontSize.SMALL -> 14.sp
                         data.settings.FontSize.MEDIUM -> 16.sp
                         data.settings.FontSize.LARGE -> 20.sp
+                        data.settings.FontSize.EXTRA_LARGE -> 24.sp
+                        data.settings.FontSize.HUGE -> 28.sp
                     },
                     lineHeight = when (fontSize) {
+                        data.settings.FontSize.EXTRA_SMALL -> 18.sp
                         data.settings.FontSize.SMALL -> 22.sp
                         data.settings.FontSize.MEDIUM -> 25.6.sp
                         data.settings.FontSize.LARGE -> 32.sp
+                        data.settings.FontSize.EXTRA_LARGE -> 38.sp
+                        data.settings.FontSize.HUGE -> 44.sp
                     },
                     fontFamily = FontFamily.Default,
                     color = Gray700
@@ -109,14 +115,20 @@ fun EditorPanel(
                                 text = "Start writing here...\n\nSelect any text to get AI suggestions",
                                 style = TextStyle(
                                     fontSize = when (fontSize) {
+                                        data.settings.FontSize.EXTRA_SMALL -> 12.sp
                                         data.settings.FontSize.SMALL -> 14.sp
                                         data.settings.FontSize.MEDIUM -> 16.sp
                                         data.settings.FontSize.LARGE -> 20.sp
+                                        data.settings.FontSize.EXTRA_LARGE -> 24.sp
+                                        data.settings.FontSize.HUGE -> 28.sp
                                     },
                                     lineHeight = when (fontSize) {
+                                        data.settings.FontSize.EXTRA_SMALL -> 18.sp
                                         data.settings.FontSize.SMALL -> 22.sp
                                         data.settings.FontSize.MEDIUM -> 25.6.sp
                                         data.settings.FontSize.LARGE -> 32.sp
+                                        data.settings.FontSize.EXTRA_LARGE -> 38.sp
+                                        data.settings.FontSize.HUGE -> 44.sp
                                     },
                                     color = Gray400
                                 )
