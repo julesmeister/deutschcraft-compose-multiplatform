@@ -92,6 +92,7 @@ internal fun NoDataPlaceholder(
     fontSize: FontSize = FontSize.MEDIUM,
     modifier: Modifier = Modifier
 ) {
+    val colorScheme = MaterialTheme.colorScheme
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
@@ -100,7 +101,7 @@ internal fun NoDataPlaceholder(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = Gray300,
+            tint = colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
             modifier = Modifier.size(48.dp)
         )
         Spacer(modifier = Modifier.height(16.dp))
@@ -115,7 +116,7 @@ internal fun NoDataPlaceholder(
         Text(
             text = message,
             style = MaterialTheme.typography.bodyMedium.copy(fontSize = textSize),
-            color = Gray400,
+            color = colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center
         )
     }
@@ -157,8 +158,9 @@ internal fun ChatSuggestionsContent(
                     fadeIn(animationSpec = ui.animations.fadeTween()),
             exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
         ) {
+            val colorScheme = MaterialTheme.colorScheme
             Surface(
-                color = Gray100,
+                color = colorScheme.surfaceVariant,
                 shape = MaterialTheme.shapes.small,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -166,13 +168,13 @@ internal fun ChatSuggestionsContent(
                     Text(
                         text = "SELECTED WORD/PHRASE",
                         style = MaterialTheme.typography.labelSmall.copy(fontSize = (baseFontSize * 0.75).sp),
-                        color = Gray500
+                        color = colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = if (selectedText.length > 200) selectedText.take(200) + "..." else selectedText,
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = (baseFontSize * 0.875).sp),
-                        color = Gray700,
+                        color = colorScheme.onSurface,
                         maxLines = 3,
                         overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                     )
@@ -188,10 +190,11 @@ internal fun ChatSuggestionsContent(
                     fadeIn(animationSpec = ui.animations.fadeTween()),
             exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
         ) {
+            val colorScheme = MaterialTheme.colorScheme
             Surface(
-                color = Indigo.copy(alpha = 0.05f),
+                color = colorScheme.primaryContainer.copy(alpha = 0.3f),
                 shape = MaterialTheme.shapes.small,
-                border = androidx.compose.foundation.BorderStroke(1.dp, Indigo.copy(alpha = 0.3f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, colorScheme.primary.copy(alpha = 0.3f)),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -206,7 +209,7 @@ internal fun ChatSuggestionsContent(
                     Text(
                         text = label,
                         style = MaterialTheme.typography.labelMedium.copy(fontSize = (baseFontSize * 0.875).sp),
-                        color = Indigo,
+                        color = colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -237,7 +240,6 @@ internal fun ChatSuggestionsContent(
                             )
                             Button(
                                 onClick = onApply,
-                                colors = ButtonDefaults.buttonColors(containerColor = Indigo),
                                 modifier = Modifier
                                     .height(36.dp)
                                     .graphicsLayer { scaleX = buttonScale; scaleY = buttonScale }
@@ -273,8 +275,9 @@ internal fun ChatSuggestionsContent(
                     fadeIn(animationSpec = ui.animations.fadeTween()),
             exit = shrinkVertically(animationSpec = tween(200)) + fadeOut(animationSpec = tween(200))
         ) {
+            val colorScheme = MaterialTheme.colorScheme
             Surface(
-                color = Gray50,
+                color = colorScheme.surface,
                 shape = MaterialTheme.shapes.small,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -282,7 +285,7 @@ internal fun ChatSuggestionsContent(
                     Text(
                         text = "SUGGESTED DIRECTIONS",
                         style = MaterialTheme.typography.labelMedium.copy(fontSize = (baseFontSize * 0.875).sp),
-                        color = Indigo,
+                        color = colorScheme.primary,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
@@ -309,18 +312,18 @@ internal fun ChatSuggestionsContent(
                                         fontSize = baseFontSize.sp,
                                         fontWeight = FontWeight.SemiBold
                                     ),
-                                    color = Indigo
+                                    color = colorScheme.primary
                                 )
                                 Text(
                                     text = suggestion,
                                     style = MaterialTheme.typography.bodyMedium.copy(fontSize = baseFontSize.sp),
-                                    color = Gray800,
+                                    color = colorScheme.onSurface,
                                     modifier = Modifier.weight(1f)
                                 )
                             }
                         }
                         if (index < suggestions.size - 1) {
-                            Divider(color = Gray200, modifier = Modifier.padding(vertical = 4.dp))
+                            Divider(color = colorScheme.outlineVariant, modifier = Modifier.padding(vertical = 4.dp))
                         }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
@@ -346,7 +349,6 @@ internal fun ChatSuggestionsContent(
             ) {
                 ui.animations.RotatingIcon(modifier = Modifier.size(32.dp)) { mod ->
                     CircularProgressIndicator(
-                        color = Indigo, 
                         modifier = mod,
                         strokeWidth = 3.dp
                     )
@@ -361,10 +363,11 @@ internal fun ChatSuggestionsContent(
                     slideInVertically(animationSpec = fadeTween()) { it / 4 },
             exit = fadeOut(animationSpec = tween(200))
         ) {
+            val colorScheme = MaterialTheme.colorScheme
             Text(
                 text = "Select a word from chat or use the buttons below for AI assistance",
                 style = MaterialTheme.typography.bodySmall.copy(fontSize = (baseFontSize * 0.875).sp),
-                color = Gray500,
+                color = colorScheme.onSurfaceVariant,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()
             )

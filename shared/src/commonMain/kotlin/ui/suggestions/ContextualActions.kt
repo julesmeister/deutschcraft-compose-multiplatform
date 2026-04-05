@@ -21,7 +21,7 @@ import androidx.compose.ui.draw.scale
 import theme.*
 
 @Composable
-internal fun ContextualActions(
+internal fun EditorContextualActions(
     selectedText: String,
     isGenerating: Boolean,
     activeAction: String?,

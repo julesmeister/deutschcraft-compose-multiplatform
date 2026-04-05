@@ -1,6 +1,7 @@
 package ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.hoverable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
@@ -25,7 +26,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.offset
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.foundation.text.selection.SelectionContainer
 import data.repository.ChatMessage
 import data.settings.FontSize
 import ui.chat.debugConstraints
@@ -124,13 +124,24 @@ internal fun PersistentChatBubble(
                     elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                     border = null
                 ) {
-                    // SelectionContainer removed - may cause scroll crash in LazyColumn
-                    Text(
-                        text = message.content,
-                        style = textStyle,
-                        color = textColor,
-                        modifier = Modifier.padding(12.dp)
-                    )
+                    if (isUser) {
+                        // User messages: simple text display
+                        Text(
+                            text = message.content,
+                            style = textStyle,
+                            color = textColor,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    } else {
+                        // AI messages: clickable words with hover highlighting
+                        SelectableWordsText(
+                            text = message.content,
+                            style = textStyle,
+                            color = textColor,
+                            onWordClick = onTextSelected,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                 }
             }
 
@@ -218,6 +229,75 @@ internal fun PersistentChatBubble(
                         color = colors.error
                     )
                 }
+            }
+        }
+    }
+}
+
+/**
+ * Renders text as individually clickable words with hover highlighting.
+ * Clicking a word triggers translation in the suggestions panel.
+ */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun SelectableWordsText(
+    text: String,
+    style: androidx.compose.ui.text.TextStyle,
+    color: Color,
+    onWordClick: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colorScheme = MaterialTheme.colorScheme
+    
+    // Split text into words and punctuation
+    val tokens = remember(text) {
+        text.split(Regex("(?<=\\s)|(?=\\s)")) // Split at whitespace boundaries
+            .flatMap { part ->
+                if (part.isBlank()) {
+                    listOf(part)
+                } else {
+                    // Further split non-whitespace parts into words and punctuation
+                    part.split(Regex("(?=[.,!?;:])"))
+                        .filter { it.isNotEmpty() }
+                }
+            }
+    }
+    
+    androidx.compose.foundation.layout.FlowRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(0.dp),
+        verticalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        tokens.forEach { token ->
+            if (token.isBlank()) {
+                // Render whitespace as non-clickable
+                Text(
+                    text = token,
+                    style = style,
+                    color = color
+                )
+            } else {
+                // Render word as clickable and hoverable
+                val interactionSource = remember(token) { MutableInteractionSource() }
+                val isHovered by interactionSource.collectIsHoveredAsState()
+                
+                val highlightColor = colorScheme.primary.copy(alpha = 0.15f)
+                val backgroundColor = if (isHovered) highlightColor else Color.Transparent
+                
+                Text(
+                    text = token,
+                    style = style,
+                    color = if (isHovered) colorScheme.primary else color,
+                    modifier = Modifier
+                        .hoverable(interactionSource)
+                        .clickable(
+                            interactionSource = interactionSource,
+                            indication = null,
+                            onClick = { onWordClick(token.trim().lowercase()) }
+                        )
+                        .background(backgroundColor, RoundedCornerShape(2.dp))
+                        .padding(horizontal = 1.dp)
+                )
             }
         }
     }

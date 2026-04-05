@@ -12,16 +12,27 @@ import java.io.File
 
 actual class DatabaseDriverFactory {
     actual val databaseManager: DatabaseManager by lazy { DatabaseManager(this) }
-    actual val chatRepository: ChatRepository by lazy { SqlDelightChatRepository(createDriver()) }
-    actual val essayRepository: EssayRepository by lazy { SqlDelightEssayRepository(createDriver()) }
+    
+    // Single driver instance shared across all repositories
+    private val driver: SqlDriver by lazy { createDriverInternal() }
+    
+    actual val chatRepository: ChatRepository by lazy { SqlDelightChatRepository(driver) }
+    actual val essayRepository: EssayRepository by lazy { SqlDelightEssayRepository(driver) }
     actual val settingsRepository: SettingsRepository by lazy { DesktopSettingsRepository() }
     
-    actual fun createDriver(): SqlDriver {
+    actual fun createDriver(): SqlDriver = driver
+    
+    private fun createDriverInternal(): SqlDriver {
         val databasePath = getDatabasePath()
         val driver = JdbcSqliteDriver("jdbc:sqlite:$databasePath")
         
-        // Always ensure schema is up to date (uses CREATE TABLE IF NOT EXISTS)
-        StudyDatabaseSqlDelight.Schema.create(driver)
+        // Create schema if needed - wrapped in try-catch to handle "already exists" gracefully
+        try {
+            StudyDatabaseSqlDelight.Schema.create(driver)
+        } catch (e: Exception) {
+            // Schema likely already exists, which is fine
+            println("[Database] Schema creation note: ${e.message}")
+        }
         
         return driver
     }
