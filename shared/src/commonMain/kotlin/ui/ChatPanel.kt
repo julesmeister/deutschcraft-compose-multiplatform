@@ -37,6 +37,10 @@ import kotlinx.coroutines.launch
 import service.OllamaService
 import theme.*
 import ui.chat.ChatBubble
+import ui.components.GermanAutocompleteState
+import ui.components.GermanSuggestionPopup
+import ui.components.acceptGermanSuggestion
+import ui.components.checkForGermanSuggestion
 
 
 @Composable
@@ -53,6 +57,24 @@ fun ChatPanel(
     var connectionStatus by remember { mutableStateOf("Checking...") }
     var selectedModel by remember { mutableStateOf("llama3.2") }
     
+    // German autocomplete state
+    val germanAutocompleteState = remember { GermanAutocompleteState() }
+    
+    // Check for German character suggestions when input text changes
+    LaunchedEffect(inputText) {
+        val cursorPos = inputText.length
+        val result = checkForGermanSuggestion(inputText, cursorPos)
+        
+        if (result != null) {
+            germanAutocompleteState.currentSuggestion = result.first
+            germanAutocompleteState.triggerStartPos = result.second
+            germanAutocompleteState.showSuggestion = true
+        } else {
+            germanAutocompleteState.showSuggestion = false
+            germanAutocompleteState.currentSuggestion = null
+        }
+    }
+    
     // Check Ollama connection on startup
     LaunchedEffect(Unit) {
         val isConnected = ollamaService.checkConnection()
@@ -63,6 +85,19 @@ fun ChatPanel(
                 selectedModel = models.first()
             }
         }
+    }
+    
+    // Handle German autocomplete accept
+    fun acceptGermanSuggestionAndUpdate() {
+        val suggestion = germanAutocompleteState.currentSuggestion ?: return
+        val (newText, newCursorPos) = acceptGermanSuggestion(
+            inputText,
+            suggestion,
+            germanAutocompleteState.triggerStartPos,
+            inputText.length
+        )
+        inputText = newText
+        germanAutocompleteState.showSuggestion = false
     }
     
     // System prompt that includes current editor context
@@ -211,96 +246,112 @@ fun ChatPanel(
         
         HorizontalDivider(color = Gray200)
         
-        // Input area
+        // Input area with German autocomplete
         Surface(
             color = Gray50,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Column(
+                modifier = Modifier.fillMaxWidth()
             ) {
-                // Lotel-style text field - rounded fill, no border
-                BasicTextField(
-                    value = inputText,
-                    onValueChange = { inputText = it },
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(RoundedCornerShape(14.dp))
-                        .background(Gray100)
-                        .heightIn(min = 48.dp, max = 120.dp),
-                    textStyle = TextStyle(
-                        fontSize = 16.sp,
-                        color = Gray800
-                    ),
-                    maxLines = 4,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
-                    keyboardActions = KeyboardActions(onSend = {
-                        if (inputText.isNotBlank() && !isGenerating) {
-                            sendMessage()
-                        }
-                    }),
-                    cursorBrush = SolidColor(Indigo),
-                    decorationBox = { innerTextField ->
-                        Box(
-                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
-                        ) {
-                            if (inputText.isEmpty()) {
-                                Text(
-                                    text = "Ask AI about your writing...",
-                                    fontSize = 16.sp,
-                                    color = Gray400
-                                )
-                            }
-                            innerTextField()
-                        }
-                    }
-                )
-                
-                val sendButtonInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
-                val isSendButtonHovered by sendButtonInteractionSource.collectIsHoveredAsState()
-                
-                val buttonSize = if (isGenerating) 48.dp else 40.dp
-                val buttonBgColor = when {
-                    isGenerating -> Color(0xFFDC2626)
-                    isSendButtonHovered && inputText.isNotBlank() -> IndigoDark
-                    inputText.isNotBlank() -> Indigo
-                    else -> Gray300
-                }
-                val iconTint = when {
-                    isGenerating -> Color.White
-                    inputText.isNotBlank() -> Color.White
-                    else -> Gray500
-                }
-                val iconScale = if (isSendButtonHovered && !isGenerating) 1.1f else 1f
-                
-                Box(
-                    modifier = Modifier
-                        .size(buttonSize)
-                        .clip(CircleShape)
-                        .background(buttonBgColor)
-                        .hoverable(sendButtonInteractionSource)
-                        .then(
-                            if (isGenerating || inputText.isNotBlank()) {
-                                Modifier.clickable { if (isGenerating) stopGeneration() else sendMessage() }
-                            } else Modifier
-                        ),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = if (isGenerating) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
-                        contentDescription = if (isGenerating) "Stop" else "Send",
-                        tint = iconTint,
+                // German autocomplete suggestion popup
+                if (germanAutocompleteState.showSuggestion && germanAutocompleteState.currentSuggestion != null) {
+                    GermanSuggestionPopup(
+                        suggestion = germanAutocompleteState.currentSuggestion!!,
+                        onAccept = { acceptGermanSuggestionAndUpdate() },
+                        onDismiss = { germanAutocompleteState.showSuggestion = false },
                         modifier = Modifier
-                            .size(if (isGenerating) 24.dp else 20.dp)
-                            .graphicsLayer {
-                                scaleX = iconScale
-                                scaleY = iconScale
-                            }
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
                     )
+                }
+                
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    // Lotel-style text field - rounded fill, no border
+                    BasicTextField(
+                        value = inputText,
+                        onValueChange = { inputText = it },
+                        modifier = Modifier
+                            .weight(1f)
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(Gray100)
+                            .heightIn(min = 48.dp, max = 120.dp),
+                        textStyle = TextStyle(
+                            fontSize = 16.sp,
+                            color = Gray800
+                        ),
+                        maxLines = 4,
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
+                        keyboardActions = KeyboardActions(onSend = {
+                            if (inputText.isNotBlank() && !isGenerating) {
+                                sendMessage()
+                            }
+                        }),
+                        cursorBrush = SolidColor(Indigo),
+                        decorationBox = { innerTextField ->
+                            Box(
+                                modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp)
+                            ) {
+                                if (inputText.isEmpty()) {
+                                    Text(
+                                        text = "Ask AI about your writing...",
+                                        fontSize = 16.sp,
+                                        color = Gray400
+                                    )
+                                }
+                                innerTextField()
+                            }
+                        }
+                    )
+                    
+                    val sendButtonInteractionSource = remember { androidx.compose.foundation.interaction.MutableInteractionSource() }
+                    val isSendButtonHovered by sendButtonInteractionSource.collectIsHoveredAsState()
+                    
+                    val buttonSize = if (isGenerating) 48.dp else 40.dp
+                    val buttonBgColor = when {
+                        isGenerating -> Color(0xFFDC2626)
+                        isSendButtonHovered && inputText.isNotBlank() -> IndigoDark
+                        inputText.isNotBlank() -> Indigo
+                        else -> Gray300
+                    }
+                    val iconTint = when {
+                        isGenerating -> Color.White
+                        inputText.isNotBlank() -> Color.White
+                        else -> Gray500
+                    }
+                    val iconScale = if (isSendButtonHovered && !isGenerating) 1.1f else 1f
+                    
+                    Box(
+                        modifier = Modifier
+                            .size(buttonSize)
+                            .clip(CircleShape)
+                            .background(buttonBgColor)
+                            .hoverable(sendButtonInteractionSource)
+                            .then(
+                                if (isGenerating || inputText.isNotBlank()) {
+                                    Modifier.clickable { if (isGenerating) stopGeneration() else sendMessage() }
+                                } else Modifier
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = if (isGenerating) Icons.Default.Close else Icons.AutoMirrored.Filled.Send,
+                            contentDescription = if (isGenerating) "Stop" else "Send",
+                            tint = iconTint,
+                            modifier = Modifier
+                                .size(if (isGenerating) 24.dp else 20.dp)
+                                .graphicsLayer {
+                                    scaleX = iconScale
+                                    scaleY = iconScale
+                                }
+                        )
+                    }
                 }
             }
         }

@@ -12,6 +12,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import data.model.VocabularyItem
 import theme.*
+import ui.components.GermanAutocompleteState
+import ui.components.GermanSuggestionPopup
+import ui.components.acceptGermanSuggestion
+import ui.components.checkForGermanSuggestion
 import ui.editor.EditorStatusBar
 import ui.editor.EditorToolbar
 import ui.editor.ErrorBanner
@@ -42,6 +46,24 @@ fun EditorPanel(
     var charCount by remember { mutableIntStateOf(0) }
     var showDifficultWords by remember { mutableStateOf(false) }
     var lastSuggestionTime by remember { mutableStateOf<Long?>(null) }
+    
+    // German autocomplete state
+    val germanAutocompleteState = remember { GermanAutocompleteState() }
+    
+    // Check for German character suggestions when text changes
+    LaunchedEffect(textFieldValue.text, textFieldValue.selection.start) {
+        val cursorPos = textFieldValue.selection.start
+        val result = checkForGermanSuggestion(textFieldValue.text, cursorPos)
+        
+        if (result != null) {
+            germanAutocompleteState.currentSuggestion = result.first
+            germanAutocompleteState.triggerStartPos = result.second
+            germanAutocompleteState.showSuggestion = true
+        } else {
+            germanAutocompleteState.showSuggestion = false
+            germanAutocompleteState.currentSuggestion = null
+        }
+    }
     
     // Update local state when external text changes
     LaunchedEffect(text) {
@@ -75,6 +97,23 @@ fun EditorPanel(
         }
     }
     
+    // Handle German autocomplete accept
+    fun acceptGermanSuggestionAndUpdate() {
+        val suggestion = germanAutocompleteState.currentSuggestion ?: return
+        val (newText, newCursorPos) = acceptGermanSuggestion(
+            textFieldValue.text,
+            suggestion,
+            germanAutocompleteState.triggerStartPos,
+            textFieldValue.selection.start
+        )
+        textFieldValue = TextFieldValue(
+            text = newText,
+            selection = androidx.compose.ui.text.TextRange(newCursorPos)
+        )
+        onTextChange(newText)
+        germanAutocompleteState.showSuggestion = false
+    }
+    
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
@@ -96,7 +135,7 @@ fun EditorPanel(
         
         HorizontalDivider(color = Gray200)
         
-        // Text Editor
+        // Text Editor with German autocomplete
         Box(
             modifier = Modifier
                 .weight(1f)
@@ -105,9 +144,12 @@ fun EditorPanel(
         ) {
             BasicTextField(
                 value = textFieldValue,
-                onValueChange = { 
-                    textFieldValue = it
-                    onTextChange(it.text)
+                onValueChange = { newValue ->
+                    // Check for Tab key (indent) or specific key combinations to accept German suggestion
+                    // In Compose, we handle this via onKeyEvent on the parent or by detecting specific text changes
+                    // For now, we'll just update the value normally
+                    textFieldValue = newValue
+                    onTextChange(newValue.text)
                 },
                 modifier = Modifier.fillMaxSize(),
                 textStyle = TextStyle(
@@ -160,6 +202,16 @@ fun EditorPanel(
                     }
                 }
             )
+            
+            // German autocomplete suggestion popup
+            if (germanAutocompleteState.showSuggestion && germanAutocompleteState.currentSuggestion != null) {
+                GermanSuggestionPopup(
+                    suggestion = germanAutocompleteState.currentSuggestion!!,
+                    onAccept = { acceptGermanSuggestionAndUpdate() },
+                    onDismiss = { germanAutocompleteState.showSuggestion = false },
+                    modifier = Modifier.align(Alignment.BottomStart)
+                )
+            }
         }
         
         // Difficult words suggestion (shown above error banner when appropriate)
