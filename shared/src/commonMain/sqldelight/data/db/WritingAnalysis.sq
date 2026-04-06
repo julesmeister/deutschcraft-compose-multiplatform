@@ -41,7 +41,7 @@ SELECT AVG(score) FROM writingAnalysis;
 
 -- Get level distribution
 getLevelDistribution:
-SELECT sentence_level, COUNT(*) as count
+SELECT sentence_level, COUNT(*)
 FROM writingAnalysis
 GROUP BY sentence_level;
 

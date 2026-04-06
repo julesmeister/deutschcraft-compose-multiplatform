@@ -206,7 +206,7 @@ class WritingAssistantRepository(private val database: Database) {
         val levelCounts = database.writingAnalysisQueries
             .getLevelDistribution()
             .executeAsList()
-            .associate { it.sentence_level to it.count }
+            .associate { it.sentence_level to it.COUNT }
         
         WritingStatistics(
             totalAnalyses = totalAnalyses.toInt(),

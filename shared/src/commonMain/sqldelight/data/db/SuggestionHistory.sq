@@ -42,11 +42,11 @@ LIMIT :limit;
 
 -- Get most applied suggestion types
 getMostAppliedSuggestions:
-SELECT suggestion_type, COUNT(*) as apply_count
+SELECT suggestion_type, COUNT(*)
 FROM suggestionHistory
 WHERE was_applied = 1
 GROUP BY suggestion_type
-ORDER BY apply_count DESC
+ORDER BY COUNT(*) DESC
 LIMIT :limit;
 
 -- Count all suggestions
@@ -59,7 +59,7 @@ SELECT COUNT(*) FROM suggestionHistory WHERE was_applied = 1;
 
 -- Count by type
 countByType:
-SELECT suggestion_type, COUNT(*) as count
+SELECT suggestion_type, COUNT(*)
 FROM suggestionHistory
 GROUP BY suggestion_type;
 
