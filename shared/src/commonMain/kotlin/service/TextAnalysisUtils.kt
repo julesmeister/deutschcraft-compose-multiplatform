@@ -1,13 +1,42 @@
 package service
 
-import data.model.AlternativeWithContext
-import data.model.CefrLevel
-import data.model.PartOfSpeech
+import data.model.*
 
 /**
  * Utility functions for text analysis.
  */
 object TextAnalysisUtils {
+    
+    fun estimateLevel(sentence: String): CefrLevel {
+        val factors = listOf(
+            sentence.split(" ").size > 15,
+            sentence.contains(Regex("\\b(weil|dass|obwohl|damit|sodass)\\b")),
+            sentence.contains(Regex("\\b(wurde|hatte|ware)\\b")),
+            sentence.contains(Regex("\\b(deren|dessen|wo)\\b")),
+            sentence.contains(","),
+        )
+        val score = factors.count { it }
+        return when (score) {
+            0 -> CefrLevel.A1
+            1 -> CefrLevel.A2
+            2 -> CefrLevel.B1
+            3, 4 -> CefrLevel.B2
+            else -> CefrLevel.C1
+        }
+    }
+
+    fun calculateScore(sentence: String, errors: List<SentenceGrammarError>): Double {
+        val baseScore = 100.0
+        val errorPenalty = errors.sumOf {
+            when (it.severity) {
+                ErrorSeverity.LOW -> 2.0
+                ErrorSeverity.MEDIUM -> 5.0
+                ErrorSeverity.HIGH -> 10.0
+                ErrorSeverity.CRITICAL -> 20.0
+            }
+        }
+        return (baseScore - errorPenalty).coerceAtLeast(0.0)
+    }
     
     fun estimatePartOfSpeech(word: String): PartOfSpeech {
         return when {

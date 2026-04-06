@@ -10,8 +10,6 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.delay
-import kotlinx.serialization.SerialName
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 expect object OllamaProcessManager {
@@ -24,7 +22,7 @@ class OllamaService {
     private val baseUrl = "http://127.0.0.1:11434"
     private val defaultModel = "llama3.2"
     
-    private val client = HttpClient {
+    val client = HttpClient {
         install(ContentNegotiation) {
             json(Json {
                 ignoreUnknownKeys = true
@@ -36,6 +34,8 @@ class OllamaService {
             connectTimeoutMillis = 5000
         }
     }
+    
+    fun getClient(): HttpClient = client
     
     suspend fun checkConnection(): Boolean {
         return try {
@@ -329,60 +329,6 @@ As the Assistant, provide a helpful response in German:"""
     }
     
     /**
-     * Suggest a new title for a chat session based on the conversation content.
-     */
-    suspend fun suggestChatTitle(
-        messages: List<data.repository.ChatMessage>,
-        model: String = defaultModel
-    ): String {
-        val conversationPreview = messages.takeLast(6).joinToString("\n") { msg ->
-            val role = if (msg.isUser) "User" else "Assistant"
-            "$role: ${msg.content.take(100)}"
-        }
-        
-        val prompt = """Based on the following German conversation, suggest a short, descriptive title (2-4 words max) that captures the main topic or theme.
-The title should be in German.
-
-Conversation:
-$conversationPreview
-
-Provide only the title, nothing else:"""
-        
-        return generateRawResponse(prompt, model, maxTokens = 20)
-    }
-    
-    /**
-     * Suggest conversation directions or topics to explore based on current chat.
-     */
-    suspend fun suggestConversationDirections(
-        messages: List<data.repository.ChatMessage>,
-        model: String = defaultModel
-    ): List<String> {
-        val conversationHistory = messages.takeLast(10).joinToString("\n") { msg ->
-            val role = if (msg.isUser) "User" else "Assistant"
-            "$role: ${msg.content.take(80)}"
-        }
-        
-        val prompt = """Based on this German conversation, suggest 3 different directions or topics the user could explore next to continue practicing German.
-Each suggestion should be a brief question or topic idea in German that naturally follows from the conversation.
-IMPORTANT: Your response MUST be in German only.
-
-Conversation:
-$conversationHistory
-
-Provide exactly 3 suggestions in German, numbered 1., 2., 3. Each should be concise (max 10 words):"""
-        
-        val response = generateRawResponse(prompt, model, maxTokens = 100)
-        
-        return response.lines()
-            .filter { it.trim().matches(Regex("^\\d+[.\\)]\\s+.+")) }
-            .map { it.replace(Regex("^\\d+[.\\)]\\s*"), "").trim() }
-            .filter { it.isNotEmpty() }
-            .takeIf { it.isNotEmpty() }
-            ?: emptyList()
-    }
-    
-    /**
      * Translate a German word or phrase to English with context.
      */
     suspend fun translateGermanWord(
@@ -425,49 +371,6 @@ Meaning: [English translation of example]"""
     }
     
     /**
-     * Suggest possible user responses based on the AI's last message.
-     * This helps users continue the conversation naturally.
-     */
-    suspend fun suggestUserResponses(
-        messages: List<data.repository.ChatMessage>,
-        model: String = defaultModel
-    ): List<String> {
-        if (messages.isEmpty()) return emptyList()
-        
-        val conversationHistory = messages.takeLast(8).joinToString("\n") { msg ->
-            val role = if (msg.isUser) "User" else "Assistant"
-            "$role: ${msg.content.take(100)}"
-        }
-        
-        val lastAiMessage = messages.lastOrNull { !it.isUser }?.content?.take(150) ?: ""
-        
-        val prompt = """Based on this German conversation, suggest 3 different ways the user could respond to continue the conversation naturally.
-Each suggestion should be a brief response in German (5-15 words) that makes sense given what the AI just said.
-The suggestions should vary in style: one could be a follow-up question, one an agreement/acknowledgment, and one a related comment.
-IMPORTANT: Your response MUST be in German only.
-
-Conversation:
-$conversationHistory
-
-Provide exactly 3 brief response suggestions in German, numbered 1., 2., 3. Each should be something the USER could say next:"""
-        
-        val response = generateRawResponse(prompt, model, maxTokens = 120)
-        
-        println("[DEBUG] suggestUserResponses raw response: $response")
-        
-        val parsed = response.lines()
-            .filter { it.trim().matches(Regex("^\\d+[.\\)]\\s+.+")) }
-            .map { it.replace(Regex("^\\d+[.\\)]\\s*"), "").trim() }
-            .filter { it.isNotEmpty() }
-            .takeIf { it.isNotEmpty() }
-            ?: emptyList()
-        
-        println("[DEBUG] suggestUserResponses parsed: $parsed")
-        
-        return parsed
-    }
-
-    /**
      * Analyze a German word for grammar, usage, and examples.
      */
     suspend fun analyzeGermanWord(
@@ -489,34 +392,3 @@ Keep your response concise."""
         return generateRawResponse(prompt, model, maxTokens = 150)
     }
 }
-
-@Serializable
-data class TagsResponse(
-    val models: List<ModelInfo>
-)
-
-@Serializable
-data class ModelInfo(
-    val name: String
-)
-
-@Serializable
-data class GenerateRequest(
-    val model: String,
-    val prompt: String,
-    val stream: Boolean,
-    val system: String? = null,
-    val options: ModelOptions? = null
-)
-
-@Serializable
-data class ModelOptions(
-    val temperature: Double? = null,
-    val num_predict: Int? = null
-)
-
-@Serializable
-data class GenerateResponse(
-    val response: String? = null,
-    val done: Boolean = false
-)
