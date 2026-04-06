@@ -54,6 +54,25 @@ object DbConstants {
     const val COL_SESSION_ID = "session_id"
     const val COL_IS_USER = "is_user"
     const val COL_MESSAGE_CONTENT = "content"
+    
+    // WritingAnalysis columns
+    const val COL_SENTENCE = "sentence"
+    const val COL_SENTENCE_LEVEL = "sentence_level"
+    const val COL_SCORE = "score"
+    const val COL_ANALYSIS_DATA = "analysis_data"
+    
+    // WritingPattern columns
+    const val COL_PATTERN_TYPE = "pattern_type"
+    const val COL_PATTERN = "pattern"
+    const val COL_FREQUENCY = "frequency"
+    const val COL_FIRST_SEEN = "first_seen"
+    const val COL_LAST_SEEN = "last_seen"
+    
+    // SuggestionHistory columns
+    const val COL_SUGGESTION_TYPE = "suggestion_type"
+    const val COL_SUGGESTION_TEXT = "suggestion_text"
+    const val COL_WAS_APPLIED = "was_applied"
+    const val COL_CONTEXT = "context"
 }
 
 /**
@@ -67,6 +86,9 @@ object TableNames {
     const val VOCABULARY = "vocabulary"
     const val CHAT_SESSION = "chatSession"
     const val CHAT_MESSAGE = "chatMessage"
+    const val WRITING_ANALYSIS = "writingAnalysis"
+    const val WRITING_PATTERN = "writingPattern"
+    const val SUGGESTION_HISTORY = "suggestionHistory"
 }
 
 /**
@@ -141,5 +163,39 @@ enum class DbCefrLevel(val dbValue: String) {
     companion object {
         fun fromDbValue(value: String): DbCefrLevel =
             entries.find { it.dbValue == value } ?: A1
+    }
+}
+
+/**
+ * Writing pattern types stored as strings in database.
+ */
+enum class DbPatternType(val dbValue: String) {
+    FAVORITE_PHRASE("FAVORITE_PHRASE"),
+    COMMON_ERROR("COMMON_ERROR"),
+    PREFERRED_STRUCTURE("PREFERRED_STRUCTURE"),
+    VOCABULARY_THEME("VOCABULARY_THEME"),
+    TRANSITION_WORD("TRANSITION_WORD");
+    
+    companion object {
+        fun fromDbValue(value: String): DbPatternType =
+            entries.find { it.dbValue == value } ?: FAVORITE_PHRASE
+    }
+}
+
+/**
+ * Suggestion categories stored as strings in database.
+ */
+enum class DbSuggestionCategory(val dbValue: String) {
+    GRAMMAR_FIX("GRAMMAR_FIX"),
+    VOCABULARY("VOCABULARY"),
+    STYLE("STYLE"),
+    STRUCTURE("STRUCTURE"),
+    NEXT_WORD("NEXT_WORD"),
+    LEARNING("LEARNING"),
+    CONTINUATION("CONTINUATION");
+    
+    companion object {
+        fun fromDbValue(value: String): DbSuggestionCategory =
+            entries.find { it.dbValue == value } ?: GRAMMAR_FIX
     }
 }

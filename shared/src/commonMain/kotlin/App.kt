@@ -33,6 +33,8 @@ import ui.SettingsPanel
 import ui.TabButton
 import ui.suggestions.SuggestionsPanel
 import ui.suggestions.SuggestionsPanelMode
+import ui.suggestions.WritingAssistantPanel
+import service.WritingAssistantService
 import kotlinx.coroutines.*
 
 @Composable
@@ -70,6 +72,9 @@ fun App(driverFactory: DatabaseDriverFactory) {
         // Difficult words state
         var difficultWords by remember { mutableStateOf(listOf<VocabularyItem>()) }
         val vocabularyRepository = remember(driverFactory) { VocabularyRepository(driverFactory.createDriver()) }
+        
+        // Writing assistant service
+        val writingAssistantService = remember { WritingAssistantService() }
         
         // Load difficult words when needed
         LaunchedEffect(activeTab, editorText) {
@@ -167,6 +172,8 @@ fun App(driverFactory: DatabaseDriverFactory) {
                                         difficultWords = vocabularyRepository.getDifficultWords(limit = 5)
                                     }
                                 },
+                                writingAssistantService = writingAssistantService,
+                                onWritingAssistantTrigger = { /* Trigger handled in panel */ },
                                 modifier = Modifier.fillMaxSize()
                             )
                             1 -> ChatPanelWithPersistence(
@@ -211,44 +218,65 @@ fun App(driverFactory: DatabaseDriverFactory) {
                         color = Gray200
                     )
                     
-                    // Suggestions Panel
-                    SuggestionsPanel(
-                        selectedText = if (activeTab == 1) chatSelectedText else selectedText,
-                        fullText = editorText,
-                        onApplySuggestion = { suggestion ->
-                            if (activeTab == 1) {
-                                // In chat mode, apply as title
-                                chatTitleSuggestion = suggestion
-                            } else {
-                                // In editor mode, apply to editor
+                    // Show appropriate panel based on active tab
+                    if (activeTab == 0) {
+                        // Writing Assistant Panel for Editor mode
+                        WritingAssistantPanel(
+                            currentAnalysis = writingAssistantService.currentAnalysis,
+                            quickSuggestions = writingAssistantService.quickSuggestions,
+                            isAnalyzing = writingAssistantService.isAnalyzing,
+                            fontSize = fontSize,
+                            onApplySuggestion = { action ->
+                                // Apply suggestion to editor text
+                                val currentText = editorText
+                                val (newText, _) = writingAssistantService.applySuggestion(currentText, currentText.length, action)
+                                editorText = newText
+                            },
+                            onDismissSuggestion = {
+                                writingAssistantService.clear()
+                            },
+                            onShowExercise = { exercise ->
+                                // Would open exercise dialog
+                            },
+                            onRequestAnalysis = {
+                                writingAssistantService.analyzeCurrentText(editorText)
+                            },
+                            modifier = Modifier.weight(1f)
+                        )
+                    } else {
+                        // Suggestions Panel for Chat mode
+                        SuggestionsPanel(
+                            selectedText = chatSelectedText,
+                            fullText = editorText,
+                            onApplySuggestion = { suggestion ->
                                 if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
                                     scope.launch {
                                         editorText = suggestion
                                     }
                                 }
-                            }
-                        },
-                        onAppendSuggestion = { suggestion ->
-                            if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
-                                scope.launch {
-                                    editorText = if (editorText.endsWith(" ") || editorText.isEmpty()) {
-                                        editorText + suggestion
-                                    } else {
-                                        editorText + " " + suggestion
+                            },
+                            onAppendSuggestion = { suggestion ->
+                                if (suggestion.isNotBlank() && !suggestion.startsWith("Error:")) {
+                                    scope.launch {
+                                        editorText = if (editorText.endsWith(" ") || editorText.isEmpty()) {
+                                            editorText + suggestion
+                                        } else {
+                                            editorText + " " + suggestion
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        onError = { errorMsg ->
-                            suggestionError = errorMsg
-                        },
-                        fontSize = fontSize,
-                        mode = if (activeTab == 1) SuggestionsPanelMode.CHAT else SuggestionsPanelMode.EDITOR,
-                        chatMessages = chatMessages,
-                        autoSuggestions = chatAutoSuggestions,
-                        onTitleSuggestion = { chatTitleSuggestion = it },
-                        modifier = Modifier.weight(1f)
-                    )
+                            },
+                            onError = { errorMsg ->
+                                suggestionError = errorMsg
+                            },
+                            fontSize = fontSize,
+                            mode = SuggestionsPanelMode.CHAT,
+                            chatMessages = chatMessages,
+                            autoSuggestions = chatAutoSuggestions,
+                            onTitleSuggestion = { chatTitleSuggestion = it },
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }

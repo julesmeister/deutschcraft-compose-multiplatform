@@ -1,0 +1,73 @@
+CREATE TABLE suggestionHistory (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    suggestion_type TEXT NOT NULL,
+    suggestion_text TEXT NOT NULL,
+    was_applied INTEGER NOT NULL DEFAULT 0,
+    context TEXT,
+    timestamp INTEGER NOT NULL
+);
+
+CREATE INDEX idx_suggestion_history_timestamp ON suggestionHistory(timestamp);
+CREATE INDEX idx_suggestion_history_type ON suggestionHistory(suggestion_type);
+CREATE INDEX idx_suggestion_history_applied ON suggestionHistory(was_applied);
+
+-- Insert suggestion record
+insertSuggestion:
+INSERT INTO suggestionHistory(suggestion_type, suggestion_text, was_applied, context, timestamp)
+VALUES (:suggestion_type, :suggestion_text, :was_applied, :context, :timestamp);
+
+-- Get last insert ID
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+-- Get recent suggestions
+getRecentSuggestions:
+SELECT * FROM suggestionHistory
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+-- Get suggestions by type
+getSuggestionsByType:
+SELECT * FROM suggestionHistory
+WHERE suggestion_type = :suggestion_type
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+-- Get applied suggestions
+getAppliedSuggestions:
+SELECT * FROM suggestionHistory
+WHERE was_applied = 1
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+-- Get most applied suggestion types
+getMostAppliedSuggestions:
+SELECT suggestion_type, COUNT(*) as apply_count
+FROM suggestionHistory
+WHERE was_applied = 1
+GROUP BY suggestion_type
+ORDER BY apply_count DESC
+LIMIT :limit;
+
+-- Count all suggestions
+countAllSuggestions:
+SELECT COUNT(*) FROM suggestionHistory;
+
+-- Count applied suggestions
+countAppliedSuggestions:
+SELECT COUNT(*) FROM suggestionHistory WHERE was_applied = 1;
+
+-- Count by type
+countByType:
+SELECT suggestion_type, COUNT(*) as count
+FROM suggestionHistory
+GROUP BY suggestion_type;
+
+-- Delete old suggestions
+deleteOldSuggestions:
+DELETE FROM suggestionHistory
+WHERE timestamp < :cutoff_timestamp;
+
+-- Clear all
+deleteAllSuggestions:
+DELETE FROM suggestionHistory;

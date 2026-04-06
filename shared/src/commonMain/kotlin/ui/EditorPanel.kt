@@ -11,7 +11,9 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import data.model.SuggestionAction
 import data.model.VocabularyItem
+import service.WritingAssistantService
 import theme.*
 import ui.components.GermanAutocompleteState
 import ui.components.GermanSuggestionPopup
@@ -40,6 +42,9 @@ fun EditorPanel(
     onDismissDifficultWords: () -> Unit = {},
     onWordPracticed: (String) -> Unit = {},
     onMarkWordAsLearned: (String) -> Unit = {},
+    // Writing assistant integration
+    writingAssistantService: WritingAssistantService? = null,
+    onWritingAssistantTrigger: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     var textFieldValue by remember { mutableStateOf(TextFieldValue(text)) }
@@ -115,6 +120,22 @@ fun EditorPanel(
         germanAutocompleteState.showSuggestion = false
     }
     
+    // Apply writing assistant suggestion
+    fun applyWritingAssistantSuggestion(action: SuggestionAction) {
+        writingAssistantService?.let { service ->
+            val cursorPos = textFieldValue.selection.start
+            val currentText = textFieldValue.text
+            
+            val (newText, newCursorPos) = service.applySuggestion(currentText, cursorPos, action)
+            
+            textFieldValue = TextFieldValue(
+                text = newText,
+                selection = androidx.compose.ui.text.TextRange(newCursorPos)
+            )
+            onTextChange(newText)
+        }
+    }
+    
     Column(
         modifier = modifier.fillMaxSize(),
         verticalArrangement = Arrangement.SpaceBetween
@@ -146,11 +167,20 @@ fun EditorPanel(
             BasicTextField(
                 value = textFieldValue,
                 onValueChange = { newValue ->
-                    // Check for Tab key (indent) or specific key combinations to accept German suggestion
-                    // In Compose, we handle this via onKeyEvent on the parent or by detecting specific text changes
-                    // For now, we'll just update the value normally
                     textFieldValue = newValue
                     onTextChange(newValue.text)
+                    
+                    // Trigger writing assistant analysis when sentence ends with punctuation
+                    writingAssistantService?.let { service ->
+                        val cursorPos = newValue.selection.start
+                        val text = newValue.text
+                        
+                        // Check if a sentence was just completed
+                        val sentenceCompleted = service.checkAndAnalyze(text, cursorPos)
+                        if (sentenceCompleted) {
+                            onWritingAssistantTrigger?.invoke()
+                        }
+                    }
                 },
                 modifier = Modifier.fillMaxSize(),
                 textStyle = TextStyle(

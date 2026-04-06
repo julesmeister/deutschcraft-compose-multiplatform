@@ -1,0 +1,59 @@
+CREATE TABLE writingAnalysis (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    sentence TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    sentence_level TEXT NOT NULL,
+    score REAL NOT NULL DEFAULT 0.0,
+    analysis_data TEXT NOT NULL
+);
+
+CREATE INDEX idx_writing_analysis_timestamp ON writingAnalysis(timestamp);
+CREATE INDEX idx_writing_analysis_level ON writingAnalysis(sentence_level);
+
+-- Insert new analysis
+insertAnalysis:
+INSERT INTO writingAnalysis(sentence, timestamp, sentence_level, score, analysis_data)
+VALUES (:sentence, :timestamp, :sentence_level, :score, :analysis_data);
+
+-- Get last insert ID
+lastInsertRowId:
+SELECT last_insert_rowid();
+
+-- Get recent analyses
+getRecentAnalyses:
+SELECT * FROM writingAnalysis
+ORDER BY timestamp DESC
+LIMIT :limit;
+
+-- Get analysis by ID
+getAnalysisById:
+SELECT * FROM writingAnalysis WHERE id = :id;
+
+-- Get analyses by date range
+getAnalysesByDateRange:
+SELECT * FROM writingAnalysis
+WHERE timestamp >= :start_time AND timestamp <= :end_time
+ORDER BY timestamp DESC;
+
+-- Get average score
+getAverageScore:
+SELECT AVG(score) FROM writingAnalysis;
+
+-- Get level distribution
+getLevelDistribution:
+SELECT sentence_level, COUNT(*) as count
+FROM writingAnalysis
+GROUP BY sentence_level;
+
+-- Count total analyses
+countAnalyses:
+SELECT COUNT(*) FROM writingAnalysis;
+
+-- Delete old analyses
+deleteOldAnalyses:
+DELETE FROM writingAnalysis
+WHERE timestamp < :cutoff_timestamp;
+
+-- Delete all
+deleteAllAnalyses:
+DELETE FROM writingAnalysis;
